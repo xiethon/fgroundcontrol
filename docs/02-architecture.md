@@ -54,3 +54,7 @@ Android 首期使用 Kotlin + Compose。跨平台需求确认后再决定是否�
 Mission 与 MissionRaw 能力须对照完整上传快照、末尾悬停/返航、索引和只读恢复核对要求后选定；不默认高层 Mission 支持全部任务项，也不因底层支持就假设 Java 绑定可用。SDK 内部重试和错误结果应纳入事务契约，业务层不叠加盲目重试。
 
 来源：https://github.com/mavlink/MAVSDK-Java 、https://mavsdk.mavlink.io/main/en/cpp/guide/general_usage.html 。仅文档核对，尚未接入或构建。
+
+### M1 落地补充
+
+MAVSDK Java/server4.1.0运行于:mavsdk非导出专用进程，主进程经Messenger串行管理，旧消息带token过滤。主前台服务承载连接生命周期，切换/停止回收子进程，不并发销毁仍阻塞的native实例；具体实现及复验见14/15。日志正式策略、回放输入边界和任务状态以05/07/16为准。
