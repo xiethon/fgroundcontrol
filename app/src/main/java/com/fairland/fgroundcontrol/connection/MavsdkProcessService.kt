@@ -10,6 +10,7 @@ class MavsdkProcessService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val engine = LocalMavsdkEngine()
     private var observer: Job? = null
+    private var telemetryObserver: Job? = null
     private val endpoint = Messenger(object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(message: Message) {
             when (message.what) {
@@ -22,6 +23,24 @@ class MavsdkProcessService : Service() {
                     observer = scope.launch {
                         engine.state.collect { state ->
                             try { client.send(Message.obtain(null, 3, token, 0).apply { this.data = Bundle().apply { putString("state", state) } }) }
+                            catch (_: RemoteException) { terminate() }
+                        }
+                    }
+                    telemetryObserver?.cancel()
+                    telemetryObserver = scope.launch {
+                        while (isActive) {
+                            delay(250)
+                            val snapshot = engine.telemetry.value
+                            if (snapshot.readings.isEmpty()) continue
+                            val payload = Bundle()
+                            snapshot.readings.forEach { (topic, reading) ->
+                                payload.putBundle(topic, Bundle().apply {
+                                    putLong("at", reading.receivedMs)
+                                    putDoubleArray("values", reading.values.map { it ?: Double.NaN }.toDoubleArray())
+                                    putString("text", reading.text)
+                                })
+                            }
+                            try { client.send(Message.obtain(null, 4, token, 0).apply { this.data = payload }) }
                             catch (_: RemoteException) { terminate() }
                         }
                     }

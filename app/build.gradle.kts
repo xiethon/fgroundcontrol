@@ -1,15 +1,31 @@
+import java.util.Properties
+
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.plugin.compose") }
+// 本地地图配置不入库；缺少配置时仍允许构建并在页面填写。
+val localMapProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.isFile) file.inputStream().use { load(it) }
+}
+fun localMapKey(name: String): String {
+    val value = localMapProperties.getProperty(name, "").trim()
+    require(value.isEmpty() || value.matches(Regex("[A-Za-z0-9_-]{8,256}"))) { "Invalid map key format in local.properties: $name" }
+    return "\"$value\""
+}
 android {
     namespace = "com.fairland.fgroundcontrol"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
     sourceSets.getByName("main").jniLibs.directories.add(layout.buildDirectory.dir("generated/cxx-runtime").get().asFile.path)
     sourceSets.getByName("main").assets.directories.add(layout.buildDirectory.dir("generated/runtime-notices").get().asFile.path)
-    defaultConfig { testInstrumentationRunner = "com.fairland.fgroundcontrol.SdkProbeInstrumentation"; applicationId = "com.fairland.fgroundcontrol"; minSdk = 28; targetSdk = 36; versionCode = 1; versionName = "0.1.0-alpha.1" }
-    buildFeatures { compose = true }
+    defaultConfig { testInstrumentationRunner = "com.fairland.fgroundcontrol.SdkProbeInstrumentation"; applicationId = "com.fairland.fgroundcontrol"; minSdk = 28; targetSdk = 36; versionCode = 1; versionName = "0.1.0-alpha.1"
+        buildConfigField("String", "TIANDITU_TOKEN", localMapKey("maps.tianditu.token"))
+        buildConfigField("String", "MAPTILER_KEY", localMapKey("maps.maptiler.key"))
+    }
+    buildFeatures { compose = true; buildConfig = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }
 dependencies {
+    implementation("org.maplibre.gl:android-sdk:13.7.1")
     implementation("androidx.activity:activity-compose:1.11.0")
     implementation("androidx.compose.material3:material3:1.3.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")

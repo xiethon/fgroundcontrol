@@ -19,6 +19,9 @@ import kotlinx.coroutines.sync.withLock
 class GroundControlApp : Application() {
     val connection by lazy { com.fairland.fgroundcontrol.connection.MavsdkConnection(this) }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val maps by lazy { com.fairland.fgroundcontrol.maps.MapRepository(filesDir.resolve("maps"), scope, BuildConfig.TIANDITU_TOKEN, BuildConfig.MAPTILER_KEY) }
+    val readout by lazy { com.fairland.fgroundcontrol.telemetry.TelemetryMonitor(connection.telemetry, scope,
+        { record(LogKind.APP, it) }, { record(LogKind.FLIGHT, "${mutablePreset.value.id}: $it") }).state }
     val replay = com.fairland.fgroundcontrol.data.ReplayPlayer(scope)
     private val logs by lazy { LogStore(filesDir.resolve("logs")) }
     private val events = com.fairland.fgroundcontrol.data.LogEventQueue()
@@ -34,6 +37,8 @@ class GroundControlApp : Application() {
     override fun onCreate() {
         super.onCreate()
         if (getProcessName().endsWith(":mavsdk")) return
+        readout
+        maps
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(com.fairland.fgroundcontrol.data.CrashHandler(
             record = { error -> logs.append(LogKind.CRASH, session, error.stackTraceToString()) },

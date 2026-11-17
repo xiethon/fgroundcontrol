@@ -11,6 +11,8 @@ class MavsdkConnection(context: Context) {
     private val main = Handler(Looper.getMainLooper())
     private val mutableState = MutableStateFlow("disconnected")
     val state = mutableState.asStateFlow()
+    private val mutableTelemetry = MutableStateFlow(com.fairland.fgroundcontrol.telemetry.VehicleTelemetry())
+    val telemetry = mutableTelemetry.asStateFlow()
     private var desired: ConnectionPreset? = null
     private var token = 0
     private var binding: ServiceConnection? = null
@@ -18,6 +20,16 @@ class MavsdkConnection(context: Context) {
     private var stopping = false
     private val receiver = Messenger(object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(message: Message) {
+            if (message.what == 4 && message.arg1 == token && !stopping && mutableTelemetry.value.connected) {
+                var next = mutableTelemetry.value
+                message.data.keySet().forEach { topic ->
+                    message.data.getBundle(topic)?.let { entry ->
+                        next = next.accept(token, topic, com.fairland.fgroundcontrol.telemetry.Reading(
+                            entry.getDoubleArray("values")?.map { it.takeIf(Double::isFinite) } ?: emptyList(), entry.getString("text"), entry.getLong("at")))
+                    }
+                }
+                mutableTelemetry.value = next
+            }
             if (message.what == 3 && message.arg1 == token && !stopping && desired != null) {
                 publish(message.data.getString("state") ?: "error: missing SDK state")
             }
@@ -37,6 +49,8 @@ class MavsdkConnection(context: Context) {
     }
     private fun publish(state: String) {
         mutableState.value = state
+        mutableTelemetry.value = if (state == "connected") mutableTelemetry.value.copy(session = token, connected = true)
+            else com.fairland.fgroundcontrol.telemetry.VehicleTelemetry(session = token)
         android.util.Log.i("FgcConnection", "session=$token state=$state")
     }
     private fun requestStop() {

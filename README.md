@@ -1,6 +1,6 @@
 # FGroundControl
 
-Kotlin + Compose Android 无人机作业系统，当前为 M1 基础工程实施中。
+Kotlin + Compose Android 无人机作业系统，当前为 M2 只读遥测与地图阶段实施中。
 
 ## 环境与构建
 
@@ -19,14 +19,13 @@ MAVSDK Java/server 4.1.0 配套固定，C++ 共享运行库来自 NDK 28.2.13676
 
 ## 当前能力与限制
 
-工程启动页、原子本地记录、三类文件日志轮转/ZIP 导出底层、离线回放解析、MAVSDK UDP 连接适配器。已提供 UDP 连接预设选择（无需输入端口）、断开、离线样例和日志导出入口，日志后台队列上限 128。崩溃日志仅尽力记录未捕获 JVM 异常摘要，不保证原生崩溃或系统杀进程记录；已加入 connectedDevice 前台服务，但其后台行为仍待设备验证。无规划、上传、飞行命令。
-
+自动 UDP 连接、只读遥测/健康提示、天地图与 MapTiler 切换、授权栅格 PMTiles 导入；保留原子本地记录、三类日志轮转/ZIP 导出和 CSV 回放。普通96/飞行32有界日志队列，JVM崩溃尽力同步保存；不保证原生崩溃或强杀堆栈。无规划、上传、飞行命令。
 - [当前进度](docs/07-progress.md)
 - [文档索引](docs/README.md)
 
 连接预设参考原项目：P401D、Local UDP 14551（通用默认）、RC7、MK32、PX4 SITL。保存上次选择的预设；启动自动连接，切换预设自动替换连接，无连接/断开按钮。SITL 的 127.0.0.1 指运行 App 的设备，桌面 SITL 需要相应隧道，不代表手机可直接访问电脑回环地址。
 
-仿真连接：选择 PX4 SITL，电脑仿真器向 Android 设备的局域网 IP:14540 发送 MAVLink UDP。App 监听并学习来包来源用于回送；电脑/手机需网络互通并允许该 UDP 流量。127.0.0.1 仅适用于同机或已建立转发的环境。当前仅连接状态，不提供仿真飞行命令；尚未完成真实 SITL 联调。
+仿真连接：选择 PX4 SITL，电脑仿真器向 Android 设备的局域网 IP:14540 发送 MAVLink UDP。App 监听并学习来包来源用于回送；电脑/手机需网络互通并允许该 UDP 流量。127.0.0.1 仅适用于同机或已建立转发的环境。当前支持只读遥测，不提供仿真飞行命令；当前环境与固定稳定版SITL的验证范围见M2记录。
 
 Android 模拟器与本机 PX4 SITL 联调（默认 PX4 GCS 输出到宿主机 14550）：
 
@@ -58,3 +57,50 @@ python3 scripts/check-native-alignment.py app/build/outputs/apk/debug/app-debug.
 完整设备自动验证：先构建 `:app:assembleDebugAndroidTest`，再执行 `scripts/verify-m1-device.sh emulator-5554 true`（需要已运行SITL并配置映射）；第二参数false可只检查原生生命周期/存储/日志。脚本明确校验INSTRUMENTATION_CODE，不以adb退出码替代测试结果。
 
 M1当前环境自动检查完成，用户及目标硬件待验收项见[清单](docs/16-m1-acceptance.md)。应用首次启动请求通知权限，拒绝不阻止连接服务，但通知栏可能不显示。
+
+M2 固定飞控验证基线（与 Android 构建及现有 SITL 隔离）：
+
+```sh
+scripts/prepare-px4-stable.sh
+# 指定独立目录时：FGC_PX4_STABLE_DIR=/path/to/isolated-px4 scripts/prepare-px4-stable.sh
+# 在已准备的官方 v1.17.0 目录内只构建、不启动：
+make px4_sitl_default
+```
+
+仅需 SIH 的 macOS 环境，可禁用可选 Gazebo/jMAVSim 依赖发现：
+
+```sh
+make px4_sitl_default 'CMAKE_ARGS=-DCMAKE_DISABLE_FIND_PACKAGE_gz-transport=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Java=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_Protobuf=TRUE'
+```
+
+`make px4_sitl sihsim_quadx` 会启动仿真，不能作为纯构建命令；该版本不可依赖 `DONT_RUN` 阻止启动。并行验证需使用独立实例、运行目录及UDP目的端口，避免混入现有飞控数据。
+
+## M2 地图配置与用户验证
+
+也可在仓库根目录已忽略的 `local.properties` 中配置（保留原有SDK配置）：
+
+```properties
+maps.tianditu.token=你的天地图token
+maps.maptiler.key=你的MapTiler密钥
+```
+
+两项均可选，修改后需重新构建安装。优先级：页面保存的非空密钥 > 构建时本地配置；未配置则提示填写。配置会随APK打包，请使用可用于Android客户端的密钥，不在仓库或日志中记录真实值。
+
+点击“填写地图密钥”，输入天地图和/或MapTiler密钥后保存。留空保留该源已保存的密钥；输入掩码显示，不回显旧密钥，取消不保存。配置持久化到应用私有目录，重启保留；不再通过JSON文件导入。
+
+离线导入需合法授权的 PMTiles v3 PNG/JPEG/WebP 栅格包，最大512MiB，元数据包含非空 `attribution`；需要道路标注时由包内容提供。最多保留两个导入包；不提供供应商瓦片批量下载。包头合法不代表瓦片内容已经验证，最终以地图实际加载为准。
+
+用户验证：在5/7寸横屏中检查遥测单位/布局；填写并保存密钥后切换天地图/MapTiler核对真实影像及署名；导入授权包后断网检查离线显示和坐标；拖地图取消跟随，再勾选恢复；断开SITL应显示缺失/过期或链路异常，重连后恢复且不连线跨越缺失轨迹。
+
+M2详细验证及未验收项见 [M2记录](docs/17-m2-validation.md)。
+
+M2无UI协议与故障回归（仅开发Android模拟器，需已构建主/测试APK、eth0/10.0.2.15可用）：
+
+```sh
+# 标准MAVLink测试源，需本地Python已安装pymavlink
+ANDROID_HOME=/path/to/android-sdk python3 scripts/verify-m2-protocol.py emulator-5554
+# 固定官方v1.17.0已构建目录；独立SIH实例1和临时运行目录
+ANDROID_HOME=/path/to/android-sdk python3 scripts/verify-m2-px4-restart.py emulator-5554 /path/to/isolated-px4
+```
+
+使用专用UDP14560/14561、控制14660/14661及独立SIH的14551/18571；占用时停止，不覆盖已有映射。后者要求实例1空闲。脚本结束清理自己创建的映射/进程，保留运行日志目录；不会重启用户已有SITL或启动Activity。协议回归验证SDK接收时刻的新鲜度，不承诺拒绝所有飞控旧时间帧。

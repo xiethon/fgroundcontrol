@@ -22,15 +22,19 @@ class MainActivity : ComponentActivity() {
         if (android.os.Build.VERSION.SDK_INT >= 33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             notificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
+        val resolver = applicationContext.contentResolver
         val app = application as GroundControlApp
         val model = androidx.lifecycle.ViewModelProvider(this)[FoundationViewModel::class.java]
         try { startForegroundService(android.content.Intent(this, ConnectionService::class.java)) }
         catch (error: Exception) { app.reportServiceError(error) }
         val export = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
-            if (uri != null) model.exportLogs { contentResolver.openOutputStream(uri) }
+            if (uri != null) model.exportLogs { resolver.openOutputStream(uri) }
         }
         val importReplay = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-            if (uri != null) model.importReplay { contentResolver.openInputStream(uri) }
+            if (uri != null) model.importReplay { resolver.openInputStream(uri) }
+        }
+        val importMapArchive = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) model.importMapArchive { resolver.openInputStream(uri) }
         }
         setContent {
             val status = model.status.collectAsStateWithLifecycle()
@@ -41,9 +45,9 @@ class MainActivity : ComponentActivity() {
             val selected = savedPreset.value
             var menuOpen by remember { mutableStateOf(false) }
             MaterialTheme { Surface(Modifier.fillMaxSize()) {
-                Column(Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
+                Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing).padding(24.dp).verticalScroll(rememberScrollState())) {
                     Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
-                    Text(stringResource(R.string.foundation))
+                    Text(stringResource(R.string.readonly_title))
                     Text(stringResource(R.string.storage_status, statusLabel(status.value)))
                     Text(stringResource(R.string.connection_status, connectionLabel(connection.value)))
                     Text(stringResource(if (selected.id == "sitl") R.string.simulation_connection else R.string.device_connection))
@@ -55,6 +59,8 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
+                    com.fairland.fgroundcontrol.maps.ReadOnlyPanel(model,
+                        { importMapArchive.launch(arrayOf("application/octet-stream", "application/vnd.pmtiles", "*/*")) })
                     Text(stringResource(R.string.replay_status, replayLabel(replay.value.phase), replay.value.index, replay.value.count))
                     replay.value.sample?.let { Text("${it.offsetMs} ms · ${it.latitude}, ${it.longitude}") }
                     Button(onClick = { importReplay.launch(arrayOf("text/*", "application/octet-stream")) }) { Text(stringResource(R.string.import_replay)) }
