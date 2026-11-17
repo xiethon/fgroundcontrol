@@ -1,6 +1,6 @@
 # M2 实施与验证
 
-状态：M2当前阶段已验收，字段/链路故障证据及Review差异复验已补齐，准备本地源码收尾。目标硬件/长稳等范围限制保留，不伪造通过；Git实际结果见07。2026-11-17，分支feat/m2-readonly，基线main 490d454，验证对象为工作区源码。
+状态：M2当前阶段已验收，字段/链路故障证据及Review差异复验已补齐，已完成本地源码收尾。目标硬件/长稳等范围限制保留，不伪造通过；Git实际结果见07。2026-11-17，分支feat/m2-readonly，基线main 490d454，验证对象为工作区源码。
 
 ## 范围与实现
 
@@ -57,7 +57,7 @@
 
 用户已明确确认Review后的快速切源、状态/相机、错误token或断网提示/重选重试、选择重开保持均复验通过，并授权补齐后执行本地源码收尾。此次只增加验证代码/证据，没有新增飞行语义或改动已验收的产品实现。
 
-标准MAVLink测试源：Python pymavlink common v2，sysid245/component1，SIMULATION protocol fixture，Android API35 ARM64/4096页，MAVSDK4.1.0。独立UDP14560/14660，不与真实飞控连通，不使用自定义MAVLink。
+标准MAVLink测试源：Python pymavlink2.4.49 common v2，sysid245/component1，SIMULATION protocol fixture，Android API35 ARM64/4096页，MAVSDK4.1.0。独立UDP14560/14660，不与真实飞控连通，不使用自定义MAVLink。
 
 | 字段 | 测试输入及期望 | 实际 |
 | --- | --- | --- |

@@ -1,6 +1,6 @@
 # FGroundControl
 
-Kotlin + Compose Android 无人机作业系统，当前为 M2 只读遥测与地图阶段实施中。
+Kotlin + Compose Android 无人机作业系统，M2只读遥测与地图阶段已验收并完成本地源码收尾。
 
 ## 环境与构建
 
