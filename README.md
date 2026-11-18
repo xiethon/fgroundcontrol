@@ -2,6 +2,8 @@
 
 Kotlin + Compose Android 无人机作业系统，M2只读遥测与地图阶段已验收并完成本地源码收尾。
 
+
+当前UI01调整：参考首页→作业方式→只读地图飞行页的导航演示；非导航按钮统一Toast“暂不支持”。原M2能力保留，地图密钥仍可通过local.properties配置；本轮不实现任务/飞行底层。视觉和导航交互待用户验证。
 ## 环境与构建
 
 JDK 21（编译目标 Java 17）、Android SDK 36 / Build Tools 36.0.0、Gradle Wrapper 9.4.1、AGP 9.2.1、内置 Kotlin 2.3.10 / Compose 插件 2.3.10。最低 Android 9，targetSdk 36。

@@ -2,6 +2,7 @@
 
 - 表达简洁，只保留结论、关键依据和待办。
 - 需求见 `docs/README.md`，未决事项见 `docs/05-decisions.md`。
+- 界面设计参考 Figma，功能实现参考 `/Users/xiethon/fairland/fgroundcontrol`；节点、源码入口及采用边界见 `docs/20-reference-guide.md`。UI样式统一遵循 `docs/19-ui-tokens.md`。
 - 始终遵循 `rules/engineering.md`；按任务阅读：
   - Android 开发：`rules/android.md`
   - 审查与交付：`rules/review.md`

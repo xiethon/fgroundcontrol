@@ -1,5 +1,7 @@
 # 协议资源索引
 
+当前选型已调整：用户确认去除MAVSDK，采用标准XML生成Java编解码代码＋直接UDP，见[21-mavlink-replacement.md](21-mavlink-replacement.md)。下文MAVSDK部分仅记录现有/历史实现，不能作为后续选型依据；源码迁移尚未执行。
+
 - 标准 MAVLink 交互参考 QGroundControl 与 PX4，包括连接、遥测、任务上传、命令 ACK 和执行状态同步。
 - 以固定 PX4 v1.17.0 及标准 MAVLink为准；参考实现记录版本/提交，不直接照搬或视为已验证行为。
 - QGroundControl 与 PX4 行为存在差异时，核对协议和目标飞控日志，确认后实现。复用代码前检查许可证。

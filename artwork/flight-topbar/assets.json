@@ -1,0 +1,56 @@
+{
+  "fileKey": "ktOZrqqgi1O4DQlVo4k64X",
+  "nodeId": "254:7522",
+  "assets": [
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_background.png",
+      "bytes": 13142,
+      "sha256": "87a87d6c1435237d802050aebb9537eaba7d72659d0e58bb9ae0be2c56bfd477"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_battery.png",
+      "bytes": 785,
+      "sha256": "c9e7d983cb9d43ed2a4f2d0f92837c3b737f9bd3b93e02d080f08e1373ce3a5a"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_gnss.png",
+      "bytes": 711,
+      "sha256": "b85324cd6fdf91db1c5377c01406b916127ec5570b7e05f8e43e5f1d2582a7d4"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_indicator.png",
+      "bytes": 178,
+      "sha256": "96d52e3a6992924844f988ef1db80e9a8ca1a67651b3a0a53880c2b56ed62558"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_map.png",
+      "bytes": 599,
+      "sha256": "2c0a3091cc63235c9e165c8728de357b619be8afb89f1d591c7dedfdf8f46811"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_mode_field.png",
+      "bytes": 885,
+      "sha256": "23520f91675b5a9143dcd9b41bd9ed3cfcc580bd5a8c797e815bf8713ade6ef0"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_percent.png",
+      "bytes": 430,
+      "sha256": "d9170a7e606a3516046bdbe0fee7c6bfbecaf4ce95c2d5d6aa478232ddb0cb43"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_rc.png",
+      "bytes": 725,
+      "sha256": "077388fbf0031a39772563b435e4e86f560b948310a709e2ccda5c6495db6daa"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_settings.png",
+      "bytes": 781,
+      "sha256": "da8bd546521cb7a2d9dce3574c1f55684c6967af50ee2b134255d0cd7943292d"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_top_tank.png",
+      "bytes": 557,
+      "sha256": "f196b046e2b0ae8469ea3d117f6b71eb6b69e5a19c2b9f0534d922701f68580d"
+    }
+  ]
+}

@@ -2,7 +2,6 @@ package com.fairland.fgroundcontrol.maps
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.view.MotionEvent
@@ -12,7 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import com.fairland.fgroundcontrol.ui.theme.*
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -36,7 +36,7 @@ import org.json.JSONObject
 import java.util.Locale
 
 @Composable
-fun ReadOnlyPanel(model: FoundationViewModel, importArchive: () -> Unit) {
+fun ReadOnlyPanel(model: FoundationViewModel, importArchive: () -> Unit, showMap: Boolean = true) {
     val readout by model.readout.collectAsStateWithLifecycle()
     val config by model.maps.collectAsStateWithLifecycle()
     var editingKeys by remember { mutableStateOf(false) }
@@ -61,7 +61,7 @@ fun ReadOnlyPanel(model: FoundationViewModel, importArchive: () -> Unit) {
         Text(stringResource(when (alert.id) { "link" -> R.string.alert_link; "telemetry" -> R.string.alert_telemetry; "battery" -> R.string.alert_battery; "gps" -> R.string.alert_gps; else -> R.string.alert_health }) + " · " + stringResource(if (alert.severity == "critical") R.string.alert_critical else R.string.alert_warning), color = MaterialTheme.colorScheme.error)
     }
     Text(stringResource(R.string.map_title), style = MaterialTheme.typography.titleLarge)
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(AppSpace.compact)) {
         listOf("tianditu" to R.string.map_tianditu, "maptiler" to R.string.map_maptiler, "offline" to R.string.map_offline).forEach { (id, title) ->
             OutlinedButton(enabled = config.status != "importing", onClick = { model.selectMap(id) }) { Text((if (config.provider == id) "✓ " else "") + stringResource(title)) }
         }
@@ -73,7 +73,7 @@ fun ReadOnlyPanel(model: FoundationViewModel, importArchive: () -> Unit) {
             if (values[0]!! !in bounds.south..bounds.north || values[1]!! !in bounds.west..bounds.east) Text(stringResource(R.string.map_outside_coverage), color = MaterialTheme.colorScheme.error)
         }
     }
-    VehicleMap(config, readout, model)
+    if (showMap) VehicleMap(config, readout, model, Modifier.fillMaxWidth().height(AppLayout.mapPreviewHeight))
     Text(config.attribution, style = MaterialTheme.typography.bodySmall)
     Row { Checkbox(checked = config.follow, onCheckedChange = model::followMap); Text(stringResource(R.string.map_follow)) }
     OutlinedButton(enabled = config.status != "importing", onClick = { editingKeys = true }) { Text(stringResource(R.string.map_edit_keys)) }
@@ -82,18 +82,33 @@ fun ReadOnlyPanel(model: FoundationViewModel, importArchive: () -> Unit) {
 
 @Composable
 @android.annotation.SuppressLint("ClickableViewAccessibility")
-private fun VehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel) {
+fun MapHomeScreen(model: FoundationViewModel, modifier: Modifier = Modifier, onSettings: () -> Unit, onTaskMode: (() -> Unit)? = null, unsupported: (() -> Unit)? = null, selectedMode: String = "") {
+    val readout by model.readout.collectAsStateWithLifecycle()
+    val config by model.maps.collectAsStateWithLifecycle()
+    val connection by model.connection.collectAsStateWithLifecycle()
+    val preset by model.preset.collectAsStateWithLifecycle()
+    var locateRequest by remember { mutableIntStateOf(0) }
+    Box(modifier) {
+        VehicleMap(config, readout, model, Modifier.fillMaxSize(), locateRequest)
+        com.fairland.fgroundcontrol.ui.TopStatusBar(readout, connection, preset.id == "sitl", config,
+            onFollow = model::followMap, onLocate = { locateRequest++ }, onSettings = onSettings, onTaskMode = onTaskMode, unsupported = unsupported, selectedMode = selectedMode,
+            modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter))
+    }
+}
+
+@Composable
+private fun VehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, modifier: Modifier, locateRequest: Int = 0) {
     val camera = remember { mutableStateOf<CameraPosition?>(null) }
     // 视图与样式代际绑定，原生异步失败回调不能归属到新地图源。
-    key(config.revision) { RevisionVehicleMap(config, readout, model, camera) }
+    key(config.revision) { RevisionVehicleMap(config, readout, model, camera, modifier, locateRequest) }
 }
 
 @Composable
 @android.annotation.SuppressLint("ClickableViewAccessibility")
-private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, camera: MutableState<CameraPosition?>) {
+private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, camera: MutableState<CameraPosition?>, modifier: Modifier, locateRequest: Int) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
-    val presenter = remember(context) { MapPresenter(model) }
+    val presenter = remember(context) { MapPresenter(model, locateRequest) }
     val view = remember(context) { MapLibre.getInstance(context); org.maplibre.android.log.Logger.setVerbosity(org.maplibre.android.log.Logger.NONE); MapView(context).apply {
         onCreate(null)
         setOnTouchListener { target, event ->
@@ -132,12 +147,12 @@ private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model
             view.onDestroy()
         }
     }
-    AndroidView(factory = { view }, modifier = Modifier.fillMaxWidth().height(320.dp), update = {
-        presenter.update(config, readout)
+    AndroidView(factory = { view }, modifier = modifier, update = {
+        presenter.update(config, readout, locateRequest)
     })
 }
 
-private class MapPresenter(private val model: FoundationViewModel) {
+private class MapPresenter(private val model: FoundationViewModel, initialLocateRequest: Int) {
     var destroyed = false
     var resourceFailed = false
     var configuration = MapConfiguration()
@@ -149,31 +164,39 @@ private class MapPresenter(private val model: FoundationViewModel) {
     private var styleToken = 0
     private var lastTrack: String? = null
     private var lastPosition = -1L
+    private var locateRequest = initialLocateRequest
+    private var handledLocateRequest = initialLocateRequest
     private val empty = "{\"type\":\"FeatureCollection\",\"features\":[]}"
     fun cameraPosition(): CameraPosition? = map?.cameraPosition
     fun attach(map: MapLibreMap) {
         if (destroyed) return
         this.map = map
+        map.uiSettings.apply {
+            isZoomGesturesEnabled = true
+            isDoubleTapGesturesEnabled = true
+            isQuickZoomGesturesEnabled = true
+        }
         map.addOnCameraMoveStartedListener { reason -> if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) model.followMap(false) }
         update(configuration, latest)
     }
-    fun update(config: MapConfiguration, readout: Readout) {
+    fun update(config: MapConfiguration, readout: Readout, locate: Int = locateRequest) {
+        locateRequest = locate
         configuration = config; latest = readout
         val map = map ?: return
         if (!hasStyle || applied != config.style || appliedRevision != config.revision) {
             hasStyle = true; applied = config.style; appliedRevision = config.revision; lastTrack = null; lastPosition = -1
             val token = ++styleToken
             val builder = if (config.remoteStyle && config.style != null) Style.Builder().fromUri(config.style)
-                else Style.Builder().fromJson(config.style ?: "{\"version\":8,\"sources\":{},\"layers\":[{\"id\":\"background\",\"type\":\"background\",\"paint\":{\"background-color\":\"#dce2e5\"}}]}")
+                else Style.Builder().fromJson(config.style ?: "{\"version\":8,\"sources\":{},\"layers\":[{\"id\":\"background\",\"type\":\"background\",\"paint\":{\"background-color\":\"${String.format(Locale.ROOT, "#%06x", AppColors.mapBackground.toArgb() and 0xffffff)}\"}}]}")
             map.setStyle(builder) { style ->
                 if (destroyed || token != styleToken) return@setStyle
                 style.addSource(GeoJsonSource("vehicle", empty)); style.addSource(GeoJsonSource("track", empty))
-                style.addLayer(LineLayer("track", "track").withProperties(lineColor("#2087d0"), lineWidth(3f)))
+                style.addLayer(LineLayer("track", "track").withProperties(lineColor(AppColors.mapTrack.toArgb()), lineWidth(AppLayout.mapTrackWidth)))
                 val icon = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
-                Canvas(icon).drawPath(Path().apply { moveTo(24f, 2f); lineTo(43f, 44f); lineTo(24f, 33f); lineTo(5f, 44f); close() }, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(240, 96, 32) })
+                Canvas(icon).drawPath(Path().apply { moveTo(24f, 2f); lineTo(43f, 44f); lineTo(24f, 33f); lineTo(5f, 44f); close() }, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = AppColors.mapAircraft.toArgb() })
                 style.addImage("aircraft", icon)
                 val dot = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
-                Canvas(dot).drawCircle(24f, 24f, 10f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(240, 96, 32) })
+                Canvas(dot).drawCircle(24f, 24f, 10f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = AppColors.mapAircraft.toArgb() })
                 style.addImage("position-only", dot)
                 style.addLayer(SymbolLayer("aircraft", "vehicle").withProperties(iconImage(Expression.get("icon")), iconRotate(Expression.get("heading")), iconRotationAlignment("map"), iconAllowOverlap(true), iconIgnorePlacement(true)))
                 config.bounds?.let { bounds ->
@@ -200,8 +223,14 @@ private class MapPresenter(private val model: FoundationViewModel) {
         val feature = JSONObject().put("type", "Feature").put("properties", JSONObject().put("heading", heading).put("icon", if (latest.vehicle.quality("attitude", latest.nowMs) == Quality.VALID) "aircraft" else "position-only"))
             .put("geometry", JSONObject().put("type", "Point").put("coordinates", org.json.JSONArray().put(position.values[1]).put(position.values[0])))
         style.getSourceAs<GeoJsonSource>("vehicle")?.setGeoJson(feature.toString())
+        if (locateRequest != handledLocateRequest) {
+            map.cameraPosition = CameraPosition.Builder(map.cameraPosition).target(LatLng(position.values[0]!!, position.values[1]!!)).build()
+            handledLocateRequest = locateRequest
+        }
         if (configuration.follow && position.receivedMs != lastPosition) {
-            map.cameraPosition = CameraPosition.Builder(map.cameraPosition).target(LatLng(position.values[0]!!, position.values[1]!!)).zoom(maxOf(map.cameraPosition.zoom, 16.0)).build()
+            // 仅首次定位设置初始级别，后续遥测跟随不覆盖用户缩放。
+            val zoom = if (lastPosition < 0) maxOf(map.cameraPosition.zoom, 16.0) else map.cameraPosition.zoom
+            map.cameraPosition = CameraPosition.Builder(map.cameraPosition).target(LatLng(position.values[0]!!, position.values[1]!!)).zoom(zoom).build()
             lastPosition = position.receivedMs
         }
     }

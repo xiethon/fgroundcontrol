@@ -1,0 +1,10 @@
+{
+  "family": "Anton",
+  "source": "https://github.com/google/fonts/tree/cee74d7ca45d66d5c1878c828645c862f2788d2d/ofl/anton",
+  "version": "Version 2.116; ttfautohint (v1.8.3)",
+  "weight": 400,
+  "file": "app/src/main/res/font/anton_regular.ttf",
+  "sha256": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab",
+  "bytes": 170812,
+  "license": "app/src/main/assets/licenses/anton_ofl.txt"
+}

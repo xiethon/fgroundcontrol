@@ -5,7 +5,8 @@
 | 工具链 | 固定 JDK、Gradle Wrapper、AGP、Kotlin、Compose、SDK/NDK；记录兼容依据 | T04 |
 | 构建入口 | README 写明环境、构建、静态检查、非 UI 测试命令 | T04 |
 | 样例 | 三类航线正常/异常输入、预期结果、协议帧与脱敏回放 | 对应功能前 |
-| UI 基线 | 页面清单、主题、关键交互与用户提供的参考图 | 对应 UI 前 |
+| UI 基线 | [Figma节点索引](20-reference-guide.md)、目标变体、[样式token](19-ui-tokens.md)及独立资源来源 | 对应 UI 前 |
+| 功能参考 | `/Users/xiethon/fairland/fgroundcontrol`；核对提交、调用/失败路径及采用差异，入口见[参考索引](20-reference-guide.md) | 对应功能前 |
 | 设备基线 | 型号、系统、分辨率、链路及飞控版本 | T01 |
 
 样例注明版本、单位和预期依据；原始日志及大型文件不入库。版本未选定时不猜测。

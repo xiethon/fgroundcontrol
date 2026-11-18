@@ -1,0 +1,16 @@
+{
+  "family": "Noto Sans SC",
+  "source": "https://github.com/google/fonts/tree/a85815a42757630ce188fdad368c2dfc444d4773/ofl/notosanssc",
+  "version": "Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603",
+  "axes": [
+    {
+      "tag": "wght",
+      "min": 100.0,
+      "max": 900.0
+    }
+  ],
+  "font": "app/src/main/res/font/noto_sans_sc.ttf",
+  "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+  "bytes": 17772300,
+  "license": "app/src/main/assets/licenses/noto_sans_sc_ofl.txt"
+}

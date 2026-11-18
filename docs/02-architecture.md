@@ -1,5 +1,7 @@
 # 架构设计
 
+当前选型已调整：用户确认去除MAVSDK，采用标准XML生成Java编解码代码＋直接UDP，见[21-mavlink-replacement.md](21-mavlink-replacement.md)。下文MAVSDK部分仅记录现有/历史实现，不能作为后续选型依据；源码迁移尚未执行。
+
 建议架构，选型与状态机待评审。
 
 ## 分层与依赖

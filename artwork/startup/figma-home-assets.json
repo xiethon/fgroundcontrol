@@ -1,0 +1,78 @@
+{
+  "figmaFile": "ktOZrqqgi1O4DQlVo4k64X",
+  "frame": "471:18513",
+  "assets": {
+    "bg": {
+      "node": "471:18514",
+      "file": "app/src/main/res/drawable-nodpi/figma_home_bg.png",
+      "size": [
+        2730,
+        1535
+      ],
+      "sha256": "c41b61b1b43e12325dde8248a110d717e14735a5d006a69da3e76b4f0f28f6af"
+    },
+    "user": {
+      "node": "3615:13925",
+      "file": "app/src/main/res/drawable-nodpi/figma_home_user.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "0626e5d9c5f970020a2f7d43e374b4b31284f9e6d61278afed90e2da79d4ca7c"
+    },
+    "settings": {
+      "node": "3615:13929",
+      "file": "app/src/main/res/drawable-nodpi/figma_home_settings.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "ac225cc9fd4af63235f3dab3a836caa32c0f5de9c6c90ba7dc25831db2750d58"
+    },
+    "notify": {
+      "node": "3615:13933",
+      "file": "app/src/main/res/drawable-nodpi/figma_home_notify.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "b092050d469df57c42657f90d585efb2037c3a33c384c0943b9089c691ac9b76"
+    },
+    "file": {
+      "node": "3615:13939",
+      "file": "app/src/main/res/drawable-nodpi/figma_home_file.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "b50502f6a40b29a72d75b17b66f1dbe75c3921d3049d5b6b85593e519aaf7ecf"
+    },
+    "device": {
+      "node": "3615:13942",
+      "file": "app/src/main/res/drawable-nodpi/figma_home_device.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "26a76ded9528a08b099f08bc6d8e0571074d153b5121e4a8e6381c989c842696"
+    },
+    "logs": {
+      "node": "3615:13948",
+      "file": "app/src/main/res/drawable-nodpi/figma_home_logs.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "7224a485508d91d7b6a3448d4b3d86e92c625d0804f83665e7247f03ec78825a"
+    },
+    "connected": {
+      "node": "8699:98959",
+      "file": "app/src/main/res/drawable-nodpi/figma_home_connected.png",
+      "size": [
+        16,
+        16
+      ],
+      "sha256": "0ab38bd905edcec79f2470934fafb5ffe96e08e9910383c8abcef5c009006a74"
+    }
+  }
+}

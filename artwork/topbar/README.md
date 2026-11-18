@@ -1,0 +1,1 @@
+资源来自 /Users/xiethon/fairland/fgroundcontrol/assets/icons/components/top_status_bar/，保留原始SVG。对应Android资源为app/src/main/res/drawable/ic_top_*.xml；保留路径/viewBox/evenOdd，移除VectorDrawable不支持的SVG滤镜阴影，界面按状态着色。仅移植本轮已确认功能的图标。
