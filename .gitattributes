@@ -1,3 +1,4 @@
+*.bat text eol=crlf
 # 生成/上游文件保持原始字节，避免修改许可证和破坏重生成一致性。
 app/src/main/java/com/MAVLink/** whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
 protocol/xml/** whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol

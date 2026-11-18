@@ -33,3 +33,5 @@
 21. [去除MAVSDK迁移方案](21-mavlink-replacement.md)
 
 22. [当前架构梳理与优化建议](22-architecture-assessment.md)
+
+23. [当前范围集成审查与验收](23-integration-review.md)
