@@ -3,7 +3,7 @@ package com.fairland.fgroundcontrol
 import android.app.Instrumentation
 import android.os.Bundle
 import com.fairland.fgroundcontrol.connection.ConnectionPreset
-import com.fairland.fgroundcontrol.connection.MavsdkConnection
+import com.fairland.fgroundcontrol.connection.DirectMavlinkConnection
 import java.net.DatagramSocket
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -39,7 +39,7 @@ class SdkProbeInstrumentation : Instrumentation() {
             val started = android.os.SystemClock.elapsedRealtime()
             val first = DatagramSocket(0).use { it.localPort }
             val second = DatagramSocket(0).use { it.localPort }
-            val adapter = MavsdkConnection(targetContext)
+            val adapter = DirectMavlinkConnection(targetContext)
             adapter.connect(ConnectionPreset("probe1", "probe1", first, "127.0.0.1", first))
             await { bound(first) }
             adapter.connect(ConnectionPreset("probe2", "probe2", second, "127.0.0.1", second))

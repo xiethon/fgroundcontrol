@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.security.MessageDigest
 
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.plugin.compose") }
 // 本地地图配置不入库；缺少配置时仍允许构建并在页面填写。
@@ -11,13 +12,26 @@ fun localMapKey(name: String): String {
     require(value.isEmpty() || value.matches(Regex("[A-Za-z0-9_-]{8,256}"))) { "Invalid map key format in local.properties: $name" }
     return "\"$value\""
 }
+val sourceBranch = providers.exec { commandLine("git", "rev-parse", "--abbrev-ref", "HEAD") }.standardOutput.asText.get().trim()
+val sourceCommit = providers.exec { commandLine("git", "rev-parse", "--short=12", "HEAD") }.standardOutput.asText.get().trim()
+val sourceDirty = providers.exec { commandLine("git", "status", "--porcelain") }.standardOutput.asText.get().isNotBlank()
+val sourceDigest = MessageDigest.getInstance("SHA-256").apply {
+    (fileTree("src/main").files + file("build.gradle.kts")).sortedBy { it.relativeTo(projectDir).path }.forEach { source ->
+        update(source.relativeTo(projectDir).path.toByteArray())
+        source.inputStream().use { input ->
+            val buffer = ByteArray(8192)
+            while (true) { val size = input.read(buffer); if (size < 0) break; update(buffer, 0, size) }
+        }
+    }
+}.digest().joinToString("") { "%02x".format(it) }.take(12)
 android {
     namespace = "com.fairland.fgroundcontrol"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
     sourceSets.getByName("main").jniLibs.directories.add(layout.buildDirectory.dir("generated/cxx-runtime").get().asFile.path)
     sourceSets.getByName("main").assets.directories.add(layout.buildDirectory.dir("generated/runtime-notices").get().asFile.path)
-    defaultConfig { testInstrumentationRunner = "com.fairland.fgroundcontrol.SdkProbeInstrumentation"; applicationId = "com.fairland.fgroundcontrol"; minSdk = 28; targetSdk = 36; versionCode = 1; versionName = "0.1.0-alpha.1"
+    defaultConfig { testInstrumentationRunner = "com.fairland.fgroundcontrol.DirectUdpProbe"; applicationId = "com.fairland.fgroundcontrol"; minSdk = 28; targetSdk = 36; versionCode = 1; versionName = "0.1.0-alpha.1"
+        buildConfigField("String", "BUILD_IDENTITY", "\"direct-udp:$sourceBranch:$sourceCommit:dirty=$sourceDirty:$sourceDigest\"")
         buildConfigField("String", "TIANDITU_TOKEN", localMapKey("maps.tianditu.token"))
         buildConfigField("String", "MAPTILER_KEY", localMapKey("maps.maptiler.key"))
     }
@@ -30,8 +44,6 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.3.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
-    implementation("io.mavsdk:mavsdk:4.1.0")
-    implementation("io.mavsdk:mavsdk-server:4.1.0")
     testImplementation("junit:junit:4.13.2")
 }
 

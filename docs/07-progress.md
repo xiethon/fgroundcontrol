@@ -74,3 +74,55 @@
 - 合并：从feat/m2-readonly快进合入本地main，合并后与阶段提交无内容差异；此前27项单测、Android构建/Lint、无UI及故障/固定PX4重启证据对应相同源码树，无冲突、无额外实现修改。
 - 清理：确认阶段提交已保留、无独有待保留提交、无关联worktree及未提交阶段改动后，删除本地feat/m2-readonly；同名远程分支只读查询不存在，跳过远程删除，本地亦无同名远程跟踪引用。main及原feat/m0-requirements保留。
 - 进度：T06/T07当前M2范围已验收；源码收尾完成。不推送代码、不远程合并、不打标签、不发布；等待用户发起下一阶段，不自动推进。目标硬件/Android9/长稳限制继续保留，不作发布或实飞通过声明。
+
+## 直接MAVLink迁移实施启动
+
+- 用户授权实施去除MAVSDK方案。为保护原feat/ui-map-home大量未提交UI改动，从main d95a2ec新建feat/mavlink-direct-udp，独立worktree /private/tmp/fgc-mavlink-direct；原工作区不切换、不暂存、不丢弃。
+- 已核对旧连接/遥测适配及生成工具，pymavlink2.4.49能够生成Java MAVLink2 common消息代码（205消息，临时输出/private/tmp/fgc-java-generated）。当前仅候选生成验证，未固化PX4对应XML版本，未替换运行链路。
+- 固定PX4临时环境/private/tmp/fgc-px4-v1.17.0-sparse已不存在，后续需恢复独立官方验证环境；不能复用历史运行结论替代新链路验证。
+- 签名消息策略正在向用户确认；未确认前不将未校验签名视为可信。源码迁移、Android构建和新链路验收尚未完成，无提交/合并，不进入M3。
+
+### 直接MAVLink迁移：签名策略与分帧
+
+- 用户确认首版拒绝签名消息，明确提示不支持签名链路，不视为认证通过；已完成独立分帧层，完整消费签名尾部后拒绝，避免尾部伪造STX注入未签名消息。未知不兼容标志不分派。
+- 新增4项单测覆盖v1/v2分包/连续包、签名尾部伪造包头、最大280字节帧、reset和未知不兼容标志。CRC仍必须由后续XML生成库核验，当前分帧通过不等于消息合法，也不代表运行链路替换完成。
+- assembleDebug、31项单测及lintDebug通过，日志/private/tmp/fgc-direct-frame-build.log；未启动UI，无提交/合并。后续仍需固定PX4对应XML、生成库接入、UDP/遥测/健康语义替换、移除MAVSDK与固定SITL全量回归。
+
+### 直接UDP会话与遥测接入
+
+- 用户要求去除MAVSDK版本接入UDP/遥测。实现DirectMavlinkConnection并替换Application入口；删除MAVSDK适配器/专用进程服务与Java/server依赖、Manifest服务。MapLibre仍有原生依赖，固定NDK运行库暂保留；旧桥接类尚留作历史测试依赖，不参与新链路。
+- 固定pymavlink2.4.49包内common/standard/minimal XML并记录SHA256，生成Java334文件；重新生成逐文件哈希一致。当前尚未核对固定PX4 v1.17.0 dialect对应版本，记录为未完成项。基线及消息列表见protocol/README.md。
+- 新链路自动UDP监听、合法PX4心跳识别/来源锁定、每秒GCS心跳、3秒超时清空与重连、切换/停止代际隔离、签名包完整消费后拒绝；接入位置/高度/速度/姿态/GPS/电池/模式/解锁/状态文本，单位转换与哨兵处理。健康七项、频率请求事务与多包状态文本尚未实现，不造假补齐。
+- 验证：主/测试APK构建、33项单测（0失败/错误）、lintDebug通过；生成往返/CRC失败新增2项。emulator-5554无UI回环探针CODE -1，验证无心跳拒绝、发现、真实UDP位置/速度单位、超时清空、重连和停止；首次自定义manifest注册探针未生效，改显式runner后通过。日志/private/tmp/fgc-direct-udp-build.log、/private/tmp/fgc-direct-udp-probe.log。APK无MAVSDK命名原生文件，未启动Activity/截图/界面自动化。
+- 模拟器已安装迁移分支基于main的APK，不包含原UI分支未提交重构；原UI源码及配置未改动。固定PX4 SITL实连/重启/丢包、多字段逐值、签名链路设备探针、端口冲突及生命周期完整回归、健康映射、生成许可整理/固定飞控版本、原生对齐仍待完成。整体迁移不标记已验收；未提交/合并、不进入M3。
+
+### 当前SITL未连接诊断
+
+- 设备检查发现用户当前安装/运行日志仍有MAVSDK服务、模拟器无UDP redir；已恢复14550→14540映射并安装直接UDP修复版，原已保存预设为sitl。修正模拟器SITL远端地址：仅ranchu/goldfish上把该预设127.0.0.1映射到宿主别名10.0.2.2，真实设备预设不变。
+- 实际SITL无UI探针仍未通过：返回“不支持签名链路”。进一步校验完整消息CRC后确认收到带签名的33/30/31等消息，不是仅凭标志误判；签名策略按用户此前确认拒绝。新增CRC核验避免损坏帧触发签名错误，拒绝诊断每次会话仅记一次，避免日志洪泛。
+- 构建/测试APK、33项单测与lint通过（最终诊断限流修正后另见最终构建）；实际SITL连接不得标通过。正在集中询问用户是授权仅仿真链路关闭签名，还是扩展APP签名校验；未擅自改动飞控签名、密钥或飞行行为。未提交/合并，未启动UI。
+
+### 签名兼容接收与实际SITL验证
+
+- 用户最终明确选择“接收但不验证签名”，取代先前策略。新增MavlinkDecoder，依据生成库消息CRC_EXTRA校验原始帧（含签名标志），完整消费13字节尾部后解码；不修改生成代码，不把消息当作已认证，不进行签名防重放；未知不兼容标志/CRC错误/长度不符继续拒绝。发送仍为未签名GCS心跳。
+- 新增3项单测：签名尾部变化不影响兼容接收、CRC损坏/签名截断拒绝、尾部伪帧头不产生第二消息。Android主/测试APK、36项单测及lint通过，日志/private/tmp/fgc-signed-accept-build.log；emulator-5554当前实际运行PX4的无UI探针CODE -1，确认心跳连接及位置收到，日志/private/tmp/fgc-signed-accept-sitl.log。此为用户现有SITL，不冒称固定官方v1.17.0完整回归。
+- 已安装修复版到模拟器，未启动Activity或界面自动化；用户需重新打开APP确认显示。未改仿真器签名/密钥。完整健康、频率事务和全面故障回归仍未完成，不标记整体迁移验收，不提交/合并、不进入M3。
+
+### 架构优化第一版
+
+- 用户授权按架构建议优化。本版继续在已从main创建的feat/mavlink-direct-udp工作树实施，不夹带/合并原UI分支未提交改动。新增UdpTransport隔离socket资源，TelemetryMapper隔离协议字段换算；连接协调保留在DirectMavlinkConnection，注入ConnectionPolicy和单调时钟。
+- 新增ConnectionSnapshot原子描述连接阶段与VehicleTelemetry，作为权威快照；旧state/telemetry两个Flow为兼容仍保留，上层尚未改成单一快照消费，因此一致性迁移未全完成。策略默认值与已确认签名兼容策略不变，无新增飞行命令。
+- 增加BuildConfig.BUILD_IDENTITY与FgcBuild启动日志，记录direct-udp/分支/基线提交/dirty及主源码+资源+构建脚本指纹，便于区分同applicationId的安装版本；不记录密钥。当前最终安装日志指纹be82dd9bf5b2。更新02和README为当前实现，历史MAVSDK不再作为现行架构。
+- 新增4项单测：遥测单位/原采样时间、无效值与电池来源优先级、UDP数据报/端口释放、空闲超时。最终主/测试APK、40项单测（0失败/错误）、lintDebug通过，日志/private/tmp/fgc-architecture-build.log。构建身份脚本初次受Gradle java命名遮蔽影响，修正为显式MessageDigest import后重建并重新安装/重跑，最终证据对应成功构建版本。
+- emulator-5554无UI回环探针及当前实际PX4心跳/位置探针均CODE -1，日志/private/tmp/fgc-architecture-udp-probe.log、/private/tmp/fgc-architecture-sitl-probe.log；已安装优化版，未启动Activity/截图/界面自动化。
+- 尚未完成：健康七项/频率事务/完整固定PX4及故障回归；Application协调职责精简、上层单一快照消费、类型化全部遥测、地图/UI拆分及生成代码模块隔离。本版是可验证的职责拆分与产物溯源，不标记所有架构建议或整体通信迁移完成。无提交/合并，不进入M3。
+
+### 合并推送前核对
+
+- 用户授权分支清理、合入main并推送origin。检查发现UI与直接UDP两工作树均有大量未提交改动；UI01最新视觉验收尚未记录，通信迁移健康/频率与完整回归未完成，当前两分支未有覆盖全部改动的最终Review/集成验证。
+- rules/git.md要求通过分支审查与验证后合入；当前不满足，故停止合并/推送/删分支，未暂存或提交，main保持d95a2ec。全部源码、资源与关联worktree保留。
+- origin配置为git@github.com:xiethon/fgroundcontrol.git；origin/main本地跟踪显示gone仅属本地状态，本轮未查询服务器，不据此推断远程main不存在。后续需先补齐Review/验收与集成检查，再核对远端并完成已获授权的操作。
+
+### 用户验收确认
+
+用户明确要求将当前状态作为已验收处理，并继续此前授权的提交、合入main、推送与分支清理。此前等待验收/停止收尾状态由本记录取代；健康/频率/目标硬件等限制保持真实，用户接受当前范围不代表这些功能或未执行测试已通过。合并与最终构建结果另行记录。

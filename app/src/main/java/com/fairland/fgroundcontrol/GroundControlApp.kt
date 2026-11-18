@@ -17,7 +17,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class GroundControlApp : Application() {
-    val connection by lazy { com.fairland.fgroundcontrol.connection.MavsdkConnection(this) }
+    val connection by lazy { com.fairland.fgroundcontrol.connection.DirectMavlinkConnection(this) }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val maps by lazy { com.fairland.fgroundcontrol.maps.MapRepository(filesDir.resolve("maps"), scope, BuildConfig.TIANDITU_TOKEN, BuildConfig.MAPTILER_KEY) }
     val readout by lazy { com.fairland.fgroundcontrol.telemetry.TelemetryMonitor(connection.telemetry, scope,
@@ -36,7 +36,7 @@ class GroundControlApp : Application() {
     val connectionReady = mutableConnectionReady.asStateFlow()
     override fun onCreate() {
         super.onCreate()
-        if (getProcessName().endsWith(":mavsdk")) return
+        android.util.Log.i("FgcBuild", BuildConfig.BUILD_IDENTITY)
         readout
         maps
         val previous = Thread.getDefaultUncaughtExceptionHandler()

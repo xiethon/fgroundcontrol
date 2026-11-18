@@ -1,0 +1,10 @@
+{
+  "generator": "pymavlink 2.4.49",
+  "dialect": "common",
+  "wire": "2.0",
+  "sha256": {
+    "common.xml": "9af62c02a93c3eac4e068761f9ddf409b5d2aa65cd475f6bd522ca22dc6b2afd",
+    "standard.xml": "33876296a0bf118eb773ac31cc8257b4ca75ec42ab0b060044f0e510d66d6ce4",
+    "minimal.xml": "bb336f9efb0f772748f69acc33805bbaa64e9f1c09654ef3dda6acab0a454153"
+  }
+}
