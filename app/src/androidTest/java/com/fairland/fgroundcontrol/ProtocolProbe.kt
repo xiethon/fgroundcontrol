@@ -1,7 +1,7 @@
 package com.fairland.fgroundcontrol
 
 import com.fairland.fgroundcontrol.connection.ConnectionPreset
-import com.fairland.fgroundcontrol.connection.MavsdkConnection
+import com.fairland.fgroundcontrol.connection.DirectMavlinkConnection
 import com.fairland.fgroundcontrol.telemetry.*
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 /** 只连接专用标准MAVLink测试源，不能用于真实设备。 */
 internal object ProtocolProbe {
-    fun stableRestart(adapter: MavsdkConnection): String {
+    fun stableRestart(adapter: DirectMavlinkConnection): String {
         fun await(condition: () -> Boolean) {
             val end = android.os.SystemClock.elapsedRealtime() + 20000
             while (!condition()) { check(android.os.SystemClock.elapsedRealtime() < end) { "Stable PX4 timeout: ${adapter.state.value}" }; Thread.sleep(100) }
@@ -33,7 +33,7 @@ internal object ProtocolProbe {
         } finally { adapter.disconnect() }
     }
 
-    fun run(adapter: MavsdkConnection): String {
+    fun run(adapter: DirectMavlinkConnection): String {
         fun await(timeout: Long = 10000, condition: () -> Boolean) {
             val end = android.os.SystemClock.elapsedRealtime() + timeout
             while (!condition()) {

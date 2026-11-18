@@ -106,3 +106,7 @@ ANDROID_HOME=/path/to/android-sdk python3 scripts/verify-m2-px4-restart.py emula
 ```
 
 使用专用UDP14560/14561、控制14660/14661及独立SIH的14551/18571；占用时停止，不覆盖已有映射。后者要求实例1空闲。脚本结束清理自己创建的映射/进程，保留运行日志目录；不会重启用户已有SITL或启动Activity。协议回归验证SDK接收时刻的新鲜度，不承诺拒绝所有飞控旧时间帧。
+
+通信迁移分支：当前使用直接MAVLink UDP，XML/生成器/心跳与消息范围见protocol/README.md；默认无UI测试runner为DirectUdpProbe。历史MAVSDK说明不代表本分支当前运行链路。完整迁移验收限制见docs/07-progress.md。
+
+构建身份：启动日志标签FgcBuild输出通信实现/分支/提交/dirty/主源码指纹，可用 `adb logcat -d -s FgcBuild:I` 核对当前安装包，避免混用UI分支和通信分支APK。该摘要不输出地图密钥。

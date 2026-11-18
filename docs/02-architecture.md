@@ -1,8 +1,6 @@
 # 架构设计
 
-当前选型已调整：用户确认去除MAVSDK，采用标准XML生成Java编解码代码＋直接UDP，见[21-mavlink-replacement.md](21-mavlink-replacement.md)。下文MAVSDK部分仅记录现有/历史实现，不能作为后续选型依据；源码迁移尚未执行。
-
-建议架构，选型与状态机待评审。
+当前实现为单app模块、按包分层；任务/规划/上传/执行/恢复章节仍是后续目标，不代表已实现。
 
 ## 分层与依赖
 
@@ -47,16 +45,15 @@ Android 首期使用 Kotlin + Compose。跨平台需求确认后再决定是否�
 
 标准 MAVLink 交互参考 QGroundControl 与 PX4，以固定 PX4 v1.17.0 及标准 MAVLink为准；依据与版本记录在 `08-protocol-index.md`。
 
-### MAVSDK 接入方案
+### 当前直接MAVLink实现
 
-通信适配层采用 MAVSDK；Android 优先评估 MAVSDK-Java 与本地 mavsdk_server，经服务接口隔离，领域层不依赖 SDK 类型。版本、原生 ABI 和 Android 9 兼容性在依赖冻结前核对，不因选型宣称已兼容。
+- UdpTransport：独立socket收发/超时/关闭，不识别业务状态。
+- MavlinkFrames/MavlinkDecoder：帧边界、原始CRC与生成消息解码；按用户确认接收但不验证签名。
+- TelemetryMapper：纯Kotlin协议适配，统一单位/哨兵/源消息优先级，生成消息类型不进入领域/UI。
+- DirectMavlinkConnection：连接协调、目标识别、心跳/超时与代际隔离；ConnectionPolicy与单调时钟可注入。
+- ConnectionSnapshot：统一phase与VehicleTelemetry的权威快照，旧state/telemetry两个Flow暂作兼容出口；上层尚未全部迁移为只消费快照，不能声称双Flow的原子消费已解决。
+- GroundControlApp：暂继续组装配置/日志/地图/连接；职责进一步拆分仍待后续优化。
 
-官方 Java 仓库包含 Android server 库，要求 server 启停进入后台事件队列，避免发现系统时阻塞 UI；当前说明不支持 Android x86/x86_64。设备 ABI 未明确前保留为工程验证条件。server/订阅生命周期跟随连接服务，释放旧会话订阅并拒绝过期回调，不随页面销毁。
+生成基线见protocol/manifest.json和protocol/README.md；依赖与协议替换验证状态见07。历史MAVSDK实现与证据见14/15/17，不作为当前直接UDP验证结论。
 
-Mission 与 MissionRaw 能力须对照完整上传快照、末尾悬停/返航、索引和只读恢复核对要求后选定；不默认高层 Mission 支持全部任务项，也不因底层支持就假设 Java 绑定可用。SDK 内部重试和错误结果应纳入事务契约，业务层不叠加盲目重试。
-
-来源：https://github.com/mavlink/MAVSDK-Java 、https://mavsdk.mavlink.io/main/en/cpp/guide/general_usage.html 。仅文档核对，尚未接入或构建。
-
-### M1 落地补充
-
-MAVSDK Java/server4.1.0运行于:mavsdk非导出专用进程，主进程经Messenger串行管理，旧消息带token过滤。主前台服务承载连接生命周期，切换/停止回收子进程，不并发销毁仍阻塞的native实例；具体实现及复验见14/15。日志正式策略、回放输入边界和任务状态以05/07/16为准。
+构建身份通过BuildConfig.BUILD_IDENTITY和FgcBuild启动日志提供：通信实现、分支、基线提交、dirty标记及app主源码/资源/构建脚本指纹。该指纹用于识别调试APK，不是完整依赖供应链摘要，也不包含本地密钥配置。主UI工作区与通信worktree仍未合并，不能将一边测试视为集成通过。
