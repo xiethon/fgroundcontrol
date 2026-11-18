@@ -88,24 +88,28 @@ fun MapHomeScreen(model: FoundationViewModel, modifier: Modifier = Modifier, onS
     val connection by model.connection.collectAsStateWithLifecycle()
     val preset by model.preset.collectAsStateWithLifecycle()
     var locateRequest by remember { mutableIntStateOf(0) }
-    Box(modifier) {
-        VehicleMap(config, readout, model, Modifier.fillMaxSize(), locateRequest)
+    BoxWithConstraints(modifier) {
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        val compassTop = with(density) { (AppLayout.flightBarHeight * AppLayout.scale(maxWidth,maxHeight) * fontScale.coerceAtLeast(1f) + AppSpace.xs).roundToPx() } + WindowInsets.displayCutout.getTop(density)
+        VehicleMap(config, readout, model, Modifier.fillMaxSize(), locateRequest, compassTop)
         com.fairland.fgroundcontrol.ui.TopStatusBar(readout, connection, preset.id == "sitl", config,
             onFollow = model::followMap, onLocate = { locateRequest++ }, onSettings = onSettings, onTaskMode = onTaskMode, unsupported = unsupported, selectedMode = selectedMode,
             modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter))
+        com.fairland.fgroundcontrol.ui.FlightDashboard(readout, AppLayout.scale(maxWidth,maxHeight), unsupported ?: {},
+            Modifier.align(androidx.compose.ui.Alignment.BottomCenter).windowInsetsPadding(WindowInsets.displayCutout.union(WindowInsets.navigationBars)).padding(bottom = com.fairland.fgroundcontrol.ui.theme.AppSpace.xs))
     }
 }
 
 @Composable
-private fun VehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, modifier: Modifier, locateRequest: Int = 0) {
+private fun VehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, modifier: Modifier, locateRequest: Int = 0, compassTop: Int = 0) {
     val camera = remember { mutableStateOf<CameraPosition?>(null) }
     // 视图与样式代际绑定，原生异步失败回调不能归属到新地图源。
-    key(config.revision) { RevisionVehicleMap(config, readout, model, camera, modifier, locateRequest) }
+    key(config.revision) { RevisionVehicleMap(config, readout, model, camera, modifier, locateRequest, compassTop) }
 }
 
 @Composable
 @android.annotation.SuppressLint("ClickableViewAccessibility")
-private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, camera: MutableState<CameraPosition?>, modifier: Modifier, locateRequest: Int) {
+private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, camera: MutableState<CameraPosition?>, modifier: Modifier, locateRequest: Int, compassTop: Int) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     val presenter = remember(context) { MapPresenter(model, locateRequest) }
@@ -148,6 +152,7 @@ private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model
         }
     }
     AndroidView(factory = { view }, modifier = modifier, update = {
+        presenter.updateCompassTop(compassTop)
         presenter.update(config, readout, locateRequest)
     })
 }
@@ -168,9 +173,16 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
     private var handledLocateRequest = initialLocateRequest
     private val empty = "{\"type\":\"FeatureCollection\",\"features\":[]}"
     fun cameraPosition(): CameraPosition? = map?.cameraPosition
+    private var compassTop = 0
+    fun updateCompassTop(top: Int) {
+        compassTop = top
+        val settings = map?.uiSettings ?: return
+        if (settings.compassMarginTop != top) settings.setCompassMargins(settings.compassMarginLeft, top, settings.compassMarginRight, settings.compassMarginBottom)
+    }
     fun attach(map: MapLibreMap) {
         if (destroyed) return
         this.map = map
+        updateCompassTop(compassTop)
         map.uiSettings.apply {
             isZoomGesturesEnabled = true
             isDoubleTapGesturesEnabled = true

@@ -1,0 +1,15 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="AltitudeStabilization" clip-path="url(#clip0_0_9)">
+<g id="Union">
+<path d="M19.5 21.75C20.3284 21.75 21 22.4216 21 23.25V23.625C21 23.8321 20.8321 24 20.625 24H3.375C3.1679 24 3.00002 23.8321 3 23.625V23.25C3 22.4216 3.67157 21.75 4.5 21.75H10.875V19.5H13.125V21.75H19.5Z" fill="white"/>
+<path d="M13.125 18H10.875V15.75H13.125V18Z" fill="white"/>
+<path d="M13.125 14.25H10.875V12H13.125V14.25Z" fill="white"/>
+<path d="M18.7961 0.27249C19.5412 0.0145875 20.1289 0.933575 19.582 1.50149L15.7507 5.48001C15.4713 5.77038 15.4713 6.22967 15.7507 6.52005L19.582 10.4986C20.1289 11.0665 19.5412 11.9855 18.7961 11.7276L13.125 9.76394V10.5H10.875V8.98538L4.29712 6.70901C3.62455 6.47597 3.62454 5.52408 4.29712 5.29104L18.7961 0.27249Z" fill="white"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_9">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
+</svg>

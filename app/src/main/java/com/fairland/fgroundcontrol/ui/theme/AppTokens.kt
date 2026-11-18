@@ -22,6 +22,9 @@ import androidx.compose.ui.unit.sp
 
 /** Figma语义样式入口；页面不得重新定义同类颜色或设计尺寸。 */
 object AppColors {
+    val dashboardPanel = Color(0x66000000)
+    val horizonSky = Color(0xFF0A84FF)
+    val horizonGround = Color(0xFF00E676)
     val surface = Color.White
     val surfaceAlternative = Color(0xFFF5F7F9)
     val textPrimary = Color(0xFF0A0E19)
@@ -94,6 +97,9 @@ object AppType {
     val flightLabel = style(20, FontWeight.Medium)
     private val numberFamily = FontFamily(Font(R.font.anton_regular, weight = FontWeight.Normal))
     val numberSmall = style(20).copy(fontFamily = numberFamily, lineHeight = 20.sp)
+    val dashboardNumber = style(28).copy(fontFamily = numberFamily)
+    val dashboardLabel = style(18)
+    val dashboardUnit = style(14)
     val numberValue = style(26).copy(fontFamily = numberFamily, lineHeight = 26.sp)
     val material = Typography(
         displayLarge = display, displayMedium = display, displaySmall = display,
@@ -104,6 +110,8 @@ object AppType {
 }
 
 object AppLayout {
+    val signalColumnWidth = 40.dp
+    val signalStatusSize = 20.dp
     const val designWidth = 1280f
     const val designHeight = 800f
     fun scale(width: Dp, height: Dp) = minOf(width.value / designWidth, height.value / designHeight)
@@ -184,3 +192,32 @@ fun GroundControlTheme(content: @Composable () -> Unit) {
 }
 
 fun TextStyle.scaled(scale: Float) = copy(fontSize = fontSize * scale, lineHeight = lineHeight * scale)
+
+/** 仪表盘设计4511:30723及参考动态图层比例。 */
+object DashboardTokens {
+    val panelWidth = 616.dp
+    val gaugeSize = 148.dp
+    val metricWidth = 116.dp
+    val metricRowHeight = 72.dp
+    val controlSize = 40.dp
+    val attitudeWingWidth = 26.dp
+    val attitudeWingHeight = 2.dp
+    val attitudeCenterWidth = 38.dp
+    val attitudeCenterHeight = 11.928.dp
+    val attitudeWingGap = 6.dp
+    const val rimStep = 10
+    const val rimMajorStep = 30
+    const val rimMajorRatio = .12f
+    const val rimMinorRatio = .06f
+    const val attitudeAssetBase = 160f
+    const val compassArrowRatio = .44f
+    const val pitchSizeRatio = .55f
+    const val pitchSpacingRatio = .15f
+    const val pitchLongRatio = .35f
+    const val pitchShortRatio = .25f
+    const val pitchLabelOffsetRatio = .8f
+    const val pitchFontRatio = .12f
+    const val pitchStep = 5
+    const val horizonPitchRange = 45f
+    val stroke = 1.dp
+}

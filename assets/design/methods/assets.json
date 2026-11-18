@@ -1,0 +1,76 @@
+{
+  "fileKey": "ktOZrqqgi1O4DQlVo4k64X",
+  "frame": "6347:70785",
+  "assets": [
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_close.png",
+      "bytes": 556,
+      "sha256": "0d7193b91d1d0ae0667a77b440c2b9398706da9785ab719d55fd7f63d5d88cfe"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_field.png",
+      "bytes": 13803557,
+      "sha256": "739728adef1d47e3af27b509664b0d3472b8162f2f04a021064f9fc6b751ebce"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_field_icon.png",
+      "bytes": 1323,
+      "sha256": "0d8e1f046beb16f26f0cb846b261cb5d63fa4f72b86b775784be8cfa2ddc8c5e"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_field_survey.png",
+      "bytes": 324308,
+      "sha256": "98e5d340a2beb71972b394699a18e7b5355b254b4525b8acc36ed378026a953c"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_field_survey_icon.png",
+      "bytes": 1221,
+      "sha256": "f0db4cb10d162e854354785f1145f50199c1519900a3b85c2a23d992e9682364"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_lift.png",
+      "bytes": 797152,
+      "sha256": "116227a833fe88ff93b683ff82856d5f87cf47527ce0c5b1f7b0cf4ed84642bf"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_lift_icon.png",
+      "bytes": 571,
+      "sha256": "d47f43923f2b8aab50d591f97bc29786104559e3f7a2e19e8115c1806e55993a"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_manual.png",
+      "bytes": 448790,
+      "sha256": "c16f3013461aedb95a64bb9da45aae04b425058f7216204118b7eac856d6e9a3"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_manual_icon.png",
+      "bytes": 1053,
+      "sha256": "8f3d11b06125b76093cc684670649dba8948b4d9f513fe4932a6ff12f886fddb"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_orchard.png",
+      "bytes": 380174,
+      "sha256": "e54571b15ec63ed3aba5fc0a17e2b0c1ad7c8cb781dc8e5d644618b75c916fde"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_orchard_icon.png",
+      "bytes": 1314,
+      "sha256": "40bdf97491e760cfdb15a6bb524d16e98873e337b11833e785e4cbd77ec2125c"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_orchard_survey.png",
+      "bytes": 224164,
+      "sha256": "ffb6a2738d718907d57d59a104be2500cae9a24c0d749b3fbcd172b6a2c77239"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_orchard_survey_icon.png",
+      "bytes": 1363,
+      "sha256": "f4a24c97c03f2a7869630f94759c4e5c1fc16d902e696f43a29a021f1f5b0ee3"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_method_return_home.png",
+      "bytes": 455,
+      "sha256": "dd1051777df962233c7f9c4dd0a9b386732bfb3dc3f4cea5c8bb57e3479ce63a"
+    }
+  ]
+}

@@ -20,8 +20,10 @@
 
 ## Figma字体对齐
 
-应用内置Google Fonts官方Noto Sans SC可变字体，400与500字重分别绑定Regular/Medium，禁用合成字重，字体来源/固定版本及SHA256记录在[字体清单](../artwork/fonts/noto-sans-sc.json)，OFL许可证随APK打包于assets/licenses。字体缺失不得退回系统SansSerif冒充对齐。
+应用内置Google Fonts官方Noto Sans SC可变字体，400与500字重分别绑定Regular/Medium，禁用合成字重，字体来源/固定版本及SHA256记录在[字体清单](../assets/design/fonts/noto-sans-sc.json)，OFL许可证随APK打包于assets/licenses。字体缺失不得退回系统SansSerif冒充对齐。
 
-Anton数值字体的固定来源/版本与SHA256见[Anton清单](../artwork/fonts/anton.json)，许可证同样随APK打包。
+Anton数值字体的固定来源/版本与SHA256见[Anton清单](../assets/design/fonts/anton.json)，许可证同样随APK打包。
 
 AppType统一设置letterSpacing=0、includeFontPadding=false，行高居中分配且不裁去首尾行高留白，对齐Figma行框语义。首页/作业方式的32/28/24/20设计字号通过既有屏幕比例缩放；sp仍尊重用户系统字体设置，不锁死辅助功能。以系统默认字体缩放核对设计基准；不同Android渲染器与Figma的栅格化差异不能仅凭构建宣称完全一致。
+
+仪表盘数据层级：dashboardLabel 18、dashboardNumber 28（Anton）、dashboardUnit 14；DashboardTokens.metricRowHeight最小72，适配比例沿用AppLayout.scale，单位与数值基线对齐。尺寸为1280×800基准，最新用户参考图优先于旧版上下分层布局。

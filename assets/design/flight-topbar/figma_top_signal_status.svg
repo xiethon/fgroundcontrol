@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="RCSignalStatusIconFrame" clip-path="url(#clip0_0_203)">
+<path id="RCSignalStatusIcon" d="M2.37171 7.66121L16.0965 3.08627C16.748 2.86911 17.3678 3.4889 17.1506 4.14036L12.5757 17.8652C12.3224 18.6249 11.2478 18.6249 10.9945 17.8652L9.10236 12.1886C8.93647 11.691 8.54594 11.3004 8.04827 11.1345L2.37171 9.24235C1.61196 8.9891 1.61196 7.91446 2.37171 7.66121Z" fill="#00D96F"/>
+</g>
+<defs>
+<clipPath id="clip0_0_203">
+<rect width="20" height="20" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -98,9 +98,15 @@ fun TopStatusBar(readout: Readout, connection: String, simulation: Boolean, map:
                 }
                 Row(Modifier.fillMaxHeight().clip(shape).background(AppColors.flightGroup).padding(horizontal = unit(AppSpace.xs)),
                     horizontalArrangement = Arrangement.spacedBy(unit(AppSpace.xs)), verticalAlignment = Alignment.CenterVertically) {
-                    DemoMetric(R.drawable.figma_top_rc, FlightPreview.rcBattery, scale)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(unit(AppSpace.xxs))) {
+                        Image(painterResource(R.drawable.figma_top_rc), null, Modifier.size(unit(AppLayout.iconAction)))
+                        Column(Modifier.width(unit(AppLayout.signalColumnWidth)), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Image(painterResource(R.drawable.figma_top_signal_status), null, Modifier.size(unit(AppLayout.signalStatusSize)))
+                            Image(painterResource(R.drawable.figma_top_signal_strength), stringResource(R.string.top_signal_strength), Modifier.size(unit(AppLayout.iconAction)))
+                        }
+                    }
                     Row(Modifier.padding(horizontal = unit(AppSpace.xxs)), horizontalArrangement = Arrangement.spacedBy(unit(AppLayout.flightMetricGap)), verticalAlignment = Alignment.CenterVertically) {
-                        Image(painterResource(R.drawable.figma_top_gnss), "GNSS", Modifier.size(unit(AppLayout.iconAction)), colorFilter = ColorFilter.tint(if (valid("gps")) AppColors.active else warning))
+                        Image(painterResource(R.drawable.figma_top_gnss), "GNSS", Modifier.size(unit(AppLayout.iconAction)), colorFilter = ColorFilter.tint(AppColors.textInverse))
                         Column(Modifier.width(unit(AppLayout.flightFixWidth)), horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(if (valid("gps")) vehicle.readings.getValue("gps").values[0]!!.toInt().toString() else unavailable("gps"),
                                 color = if (valid("gps")) AppColors.active else warning,
@@ -113,7 +119,7 @@ fun TopStatusBar(readout: Readout, connection: String, simulation: Boolean, map:
                         Box(Modifier.size(unit(AppLayout.iconAction)), contentAlignment = Alignment.Center) {
                             Image(painterResource(R.drawable.figma_top_battery), batteryDescription,
                                 Modifier.requiredSize(unit(AppLayout.iconAction), unit(AppLayout.flightBatteryHeight)),
-                                colorFilter = ColorFilter.tint(batteryColor))
+                                colorFilter = ColorFilter.tint(AppColors.textInverse))
                         }
                         Column(Modifier.width(unit(if (valid("battery") || valid("voltage")) AppLayout.flightNumberWidth else AppLayout.flightMissingWidth))) {
                             Text(voltage, color = white, style = if (valid("voltage")) AppType.numberSmall.scaled(scale) else AppType.headerAction.scaled(scale), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -163,7 +169,6 @@ private fun FlightBarButton(icon: Int, label: String, scale: Float, action: () -
 
 /** 仅UI预览，不能作为遥测、健康判定或日志输入。 */
 private object FlightPreview {
-    const val rcBattery = "99%"
     const val secondBattery = "40%"
     const val tank = "120.5 L"
 }

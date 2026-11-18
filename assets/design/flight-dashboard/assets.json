@@ -1,0 +1,86 @@
+{
+  "fileKey": "ktOZrqqgi1O4DQlVo4k64X",
+  "nodeId": "4511:30723",
+  "dynamicLayersSource": "/Users/xiethon/fairland/fgroundcontrol/assets/icons/components",
+  "assets": [
+    {
+      "file": "app/src/main/res/drawable-nodpi/dashboard_altitude_stabilization.png",
+      "size": [
+        24,
+        24
+      ],
+      "bytes": 356,
+      "sha256": "3cb4f06aec8ccff6bddadfb4710462572a57cfd6b668603971a90a55680f85fe",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/dashboard_compass_instrument_arrow.png",
+      "size": [
+        72,
+        72
+      ],
+      "bytes": 1008,
+      "sha256": "cc8078a9458da12500534eb656d7a137bf12986be1df3b4eb8abb2e57d3f649a",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/dashboard_compass_instrument_dial.png",
+      "size": [
+        160,
+        160
+      ],
+      "bytes": 6110,
+      "sha256": "1cb3ba020c5622170e4f7af7362f144c4a0b85cac0dbd24297d7350b6ce0867f",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/dashboard_figma_attitude_center.png",
+      "size": [
+        38,
+        12
+      ],
+      "bytes": 502,
+      "sha256": "1238c0a876f7326ffb991c417034e367b1992b831303ccbf734ebecfd19e4f2f",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/dashboard_figma_attitude_wing.png",
+      "size": [
+        26,
+        2
+      ],
+      "bytes": 109,
+      "sha256": "85d24b61f5a0003a7d9febc4ea452efcb282e2dd2e2b0eded3390e20ab1bb1a5",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/dashboard_obstacle_avoidance.png",
+      "size": [
+        24,
+        24
+      ],
+      "bytes": 595,
+      "sha256": "94cdd45265ce473e2e0208df7297f70d8f18deed38fc6cef3e3520c130c35ac4",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/dashboard_obstacle_bypass.png",
+      "size": [
+        24,
+        24
+      ],
+      "bytes": 490,
+      "sha256": "eb93c9f83cf37566ccf94f05813a4df8ae393d92d4624a3e79ba61a1e23014e7",
+      "role": "runtime"
+    }
+  ],
+  "fidelityNodes": [
+    "5430:26822",
+    "5430:26824",
+    "5430:26825"
+  ],
+  "palette": {
+    "sky": "#0A84FF",
+    "ground": "#00E676"
+  }
+}
