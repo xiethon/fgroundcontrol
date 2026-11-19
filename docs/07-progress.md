@@ -545,3 +545,5 @@ Toast紧贴顶栏下方：顶部避让与TopStatusBar统一采用displayCutout�
 - 参考当前HEAD=a73f9c6312a5904fe606cecd9850fec3870bd532，与记录2383502比较MissionCreatorPanel/FGCComboButton/FieldMissionToolbar/FieldMissionActionPanel无差异；采用边界仍以用户最终确认覆盖早期交互。设计节点3909:32939/33286、独立SVG及截图采纳差异见20和此前记录，token使用已核对。17个本轮清单资源路径/哈希通过。
 - assembleDebug、49项单测、lintDebug通过，日志/private/tmp/fgc-m3-boundary-review.log；正常保存重开、非法/重复点、损坏记录和写失败恢复回归通过。用户验收与AI自动验证分别记录，不互相冒充。
 - 本轮仅单边界加点/草稿增量已验收；左侧设置、障碍物、自由/AB、航线生成、上传执行均不宣称完成，T08/T09完整规划任务仍待后续。无本增量已知阻塞，具备本地源码收尾条件；用户未授权本轮推送，不推送。
+
+边界增量源码收尾结果：阶段提交5a36687已快进合入本地main；工作区干净、无独有待保留提交或关联worktree后，删除feat/m3-field-boundary及准备分支feat/m3-planning-contract。同名远程分支不存在，跳过远程删除。本轮未推送，本地main领先远程；用户未发起下一增量，不自动继续。
