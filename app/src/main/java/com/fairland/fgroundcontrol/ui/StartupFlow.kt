@@ -31,10 +31,22 @@ import com.fairland.fgroundcontrol.maps.MapHomeScreen
 fun StartupFlow(model: FoundationViewModel, unsupported: () -> Unit) {
     var page by rememberSaveable { mutableStateOf("home") }
     var lastMode by rememberSaveable { mutableStateOf("") }
-    BackHandler(enabled = page != "home") { page = if (page == "flight") "methods" else "home" }
+    val boundary by model.boundary.state.collectAsStateWithLifecycle()
+    var asked by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(boundary.loaded) { if(boundary.loaded && boundary.draft==null) asked=true }
+    if(boundary.loaded && !asked && boundary.draft!=null) AlertDialog(onDismissRequest={asked=true},title={Text(stringResource(R.string.boundary_resume))},text={Text(stringResource(R.string.boundary_resume_hint))},confirmButton={TextButton(onClick={asked=true;lastMode="field";page="boundary-edit";model.followMap(false)}) {Text(stringResource(R.string.boundary_continue))}},dismissButton={TextButton(onClick={asked=true}) {Text(stringResource(R.string.boundary_later))}})
+    BackHandler(enabled = page != "home" && !page.startsWith("boundary")) { page = if (page == "flight") "methods" else "home" }
     when (page) {
-        "flight" -> MapHomeScreen(model, Modifier.fillMaxSize(), onSettings = unsupported,
-            onTaskMode = { page = "methods" }, unsupported = unsupported, selectedMode = lastMode)
+        "flight", "boundary-list", "boundary-edit" -> if(lastMode=="field") {
+            // 保持同一个调用位置，导航只改变覆盖面板，不销毁底层MapView。
+            BoundaryFlow(model,page=="boundary-edit",
+                onEdit={page="boundary-edit";model.followMap(false)},
+                onExit={page=when(page) { "boundary-edit" -> "boundary-list"; "boundary-list" -> "flight"; else -> "methods" }},
+                unsupported=unsupported,listVisible=page=="boundary-list",onOpenList={page="boundary-list"})
+        } else {
+            MapHomeScreen(model, Modifier.fillMaxSize(), onSettings = unsupported,
+                onTaskMode = { page = "methods" }, unsupported = unsupported, selectedMode = lastMode)
+        }
         "methods" -> MethodSelection(onHome = { page = "home" }, onChoose = { mode -> lastMode = mode; page = "flight" }, unsupported = unsupported)
         else -> {
             val connection by model.connection.collectAsStateWithLifecycle()

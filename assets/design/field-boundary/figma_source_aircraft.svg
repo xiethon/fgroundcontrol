@@ -1,0 +1,25 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="IconDrone">
+<path id="Union" d="M34.5939 37.0256C34.7561 37.4151 34.3928 37.818 33.9886 37.6968L20.1436 33.5433C20.0499 33.5152 19.95 33.5152 19.8563 33.5433L6.01125 37.6968C5.60711 37.818 5.24376 37.4151 5.40604 37.0256L19.5384 3.10787C19.7094 2.69762 20.2905 2.69762 20.4615 3.10787L34.5939 37.0256Z" fill="#DF4747" stroke-width="4" stroke-linecap="round" stroke="white"/>
+<g id="icon-drone">
+<g id="Polygon 1">
+<use xlink:href="#stroke0_0_787" fill="#FF3640"/>
+<use xlink:href="#stroke0_0_787" fill="black" fill-opacity="0.2"/>
+</g>
+<g id="Polygon 2">
+<use xlink:href="#stroke1_0_787" fill="#FF3640"/>
+<use xlink:href="#stroke1_0_787" fill="white" fill-opacity="0.2"/>
+</g>
+<path id="Polygon 3" d="M20 22V33.5L5 38L20 22Z" fill="#FF3640"/>
+<g id="Polygon 4">
+<use xlink:href="#stroke2_0_787" fill="#FF3640"/>
+<use xlink:href="#stroke2_0_787" fill="black" fill-opacity="0.1"/>
+</g>
+</g>
+</g>
+<defs>
+<path id="stroke0_0_787" d="M20 2L20 22.25L5 38L20 2Z"/>
+<path id="stroke1_0_787" d="M20 2L20 22.25L35 38L20 2Z"/>
+<path id="stroke2_0_787" d="M20 22V33.5L35 38L20 22Z"/>
+</defs>
+</svg>

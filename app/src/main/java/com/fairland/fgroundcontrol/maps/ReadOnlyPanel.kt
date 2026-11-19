@@ -82,7 +82,7 @@ fun ReadOnlyPanel(model: FoundationViewModel, importArchive: () -> Unit, showMap
 
 @Composable
 @android.annotation.SuppressLint("ClickableViewAccessibility")
-fun MapHomeScreen(model: FoundationViewModel, modifier: Modifier = Modifier, onSettings: () -> Unit, onTaskMode: (() -> Unit)? = null, unsupported: (() -> Unit)? = null, selectedMode: String = "") {
+fun MapHomeScreen(model: FoundationViewModel, modifier: Modifier = Modifier, onSettings: () -> Unit, onTaskMode: (() -> Unit)? = null, unsupported: (() -> Unit)? = null, selectedMode: String = "", editingBoundary: Boolean = false) {
     val readout by model.readout.collectAsStateWithLifecycle()
     val config by model.maps.collectAsStateWithLifecycle()
     val connection by model.connection.collectAsStateWithLifecycle()
@@ -95,7 +95,7 @@ fun MapHomeScreen(model: FoundationViewModel, modifier: Modifier = Modifier, onS
         com.fairland.fgroundcontrol.ui.TopStatusBar(readout, connection, preset.id == "sitl", config,
             onFollow = model::followMap, onLocate = { locateRequest++ }, onSettings = onSettings, onTaskMode = onTaskMode, unsupported = unsupported, selectedMode = selectedMode,
             modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter))
-        com.fairland.fgroundcontrol.ui.FlightDashboard(readout, AppLayout.scale(maxWidth,maxHeight), unsupported ?: {},
+        if (!editingBoundary) com.fairland.fgroundcontrol.ui.FlightDashboard(readout, AppLayout.scale(maxWidth,maxHeight), unsupported ?: {},
             Modifier.align(androidx.compose.ui.Alignment.BottomCenter).windowInsetsPadding(WindowInsets.displayCutout.union(WindowInsets.navigationBars)).padding(bottom = com.fairland.fgroundcontrol.ui.theme.AppSpace.xs))
     }
 }
@@ -110,6 +110,7 @@ private fun VehicleMap(config: MapConfiguration, readout: Readout, model: Founda
 @Composable
 @android.annotation.SuppressLint("ClickableViewAccessibility")
 private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, camera: MutableState<CameraPosition?>, modifier: Modifier, locateRequest: Int, compassTop: Int) {
+    val boundaryState by model.boundary.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     val presenter = remember(context) { MapPresenter(model, locateRequest) }
@@ -152,6 +153,7 @@ private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model
         }
     }
     AndroidView(factory = { view }, modifier = modifier, update = {
+        presenter.drawBoundary(boundaryState.draft?.points.orEmpty())
         presenter.updateCompassTop(compassTop)
         presenter.update(config, readout, locateRequest)
     })
@@ -172,6 +174,21 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
     private var locateRequest = initialLocateRequest
     private var handledLocateRequest = initialLocateRequest
     private val empty = "{\"type\":\"FeatureCollection\",\"features\":[]}"
+    private var boundaryPoints = emptyList<com.fairland.fgroundcontrol.mission.BoundaryPoint>()
+    private var boundarySource: GeoJsonSource? = null
+    fun drawBoundary(points: List<com.fairland.fgroundcontrol.mission.BoundaryPoint>) {
+        val unchanged = boundaryPoints == points
+        boundaryPoints = points
+        val source=map?.style?.getSourceAs<GeoJsonSource>("boundary-draft") ?: return
+        if (unchanged && boundarySource === source) return
+        boundarySource = source
+        val features=points.map { p -> "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[${p.longitude},${p.latitude}]}}" }.toMutableList()
+        if(points.size >= 2) {
+            val route=(points + if(points.size>=3) listOf(points.first()) else emptyList()).joinToString(",") { "[${it.longitude},${it.latitude}]" }
+            features.add("{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[$route]}}")
+        }
+        source.setGeoJson("{\"type\":\"FeatureCollection\",\"features\":[${features.joinToString(",")}]}")
+    }
     fun cameraPosition(): CameraPosition? = map?.cameraPosition
     private var compassTop = 0
     fun updateCompassTop(top: Int) {
@@ -188,12 +205,19 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
             isDoubleTapGesturesEnabled = true
             isQuickZoomGesturesEnabled = true
         }
+        fun centerChanged() {
+            val target=map.cameraPosition.target
+            model.boundaryCenter.value=target?.let { com.fairland.fgroundcontrol.mission.BoundaryPoint(it.latitude,it.longitude) }
+        }
+        map.addOnCameraIdleListener { if (!destroyed) centerChanged() }
+        centerChanged()
         map.addOnCameraMoveStartedListener { reason -> if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) model.followMap(false) }
         update(configuration, latest)
     }
     fun update(config: MapConfiguration, readout: Readout, locate: Int = locateRequest) {
         locateRequest = locate
         configuration = config; latest = readout
+        if (!readout.vehicle.connected) model.mapCenteredSession = null
         val map = map ?: return
         if (!hasStyle || applied != config.style || appliedRevision != config.revision) {
             hasStyle = true; applied = config.style; appliedRevision = config.revision; lastTrack = null; lastPosition = -1
@@ -202,6 +226,10 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
                 else Style.Builder().fromJson(config.style ?: "{\"version\":8,\"sources\":{},\"layers\":[{\"id\":\"background\",\"type\":\"background\",\"paint\":{\"background-color\":\"${String.format(Locale.ROOT, "#%06x", AppColors.mapBackground.toArgb() and 0xffffff)}\"}}]}")
             map.setStyle(builder) { style ->
                 if (destroyed || token != styleToken) return@setStyle
+                style.addSource(GeoJsonSource("boundary-draft", empty))
+                style.addLayer(LineLayer("boundary-line", "boundary-draft").withProperties(lineColor(AppColors.textInverse.toArgb()),lineWidth(AppLayout.mapTrackWidth)))
+                style.addLayer(org.maplibre.android.style.layers.CircleLayer("boundary-points", "boundary-draft").withProperties(org.maplibre.android.style.layers.PropertyFactory.circleColor(AppColors.boundaryPoint.toArgb()), org.maplibre.android.style.layers.PropertyFactory.circleRadius(AppLayout.boundaryPointRadius), org.maplibre.android.style.layers.PropertyFactory.circleStrokeColor(AppColors.textInverse.toArgb()),org.maplibre.android.style.layers.PropertyFactory.circleStrokeWidth(AppLayout.boundaryPointStroke)))
+                drawBoundary(boundaryPoints)
                 style.addSource(GeoJsonSource("vehicle", empty)); style.addSource(GeoJsonSource("track", empty))
                 style.addLayer(LineLayer("track", "track").withProperties(lineColor(AppColors.mapTrack.toArgb()), lineWidth(AppLayout.mapTrackWidth)))
                 val icon = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
@@ -210,7 +238,7 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
                 val dot = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
                 Canvas(dot).drawCircle(24f, 24f, 10f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = AppColors.mapAircraft.toArgb() })
                 style.addImage("position-only", dot)
-                style.addLayer(SymbolLayer("aircraft", "vehicle").withProperties(iconImage(Expression.get("icon")), iconRotate(Expression.get("heading")), iconRotationAlignment("map"), iconAllowOverlap(true), iconIgnorePlacement(true)))
+                style.addLayer(SymbolLayer("aircraft", "vehicle").withProperties(org.maplibre.android.style.layers.PropertyFactory.iconSize(AppLayout.mapAircraftIconScale), iconImage(Expression.get("icon")), iconRotate(Expression.get("heading")), iconRotationAlignment("map"), iconAllowOverlap(true), iconIgnorePlacement(true)))
                 config.bounds?.let { bounds ->
                     if (!config.follow || latest.vehicle.quality("position", latest.nowMs) != Quality.VALID) map.cameraPosition = CameraPosition.Builder().target(LatLng((bounds.south + bounds.north) / 2, (bounds.west + bounds.east) / 2)).zoom(bounds.zoom.toDouble()).build()
                 }
@@ -235,13 +263,21 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
         val feature = JSONObject().put("type", "Feature").put("properties", JSONObject().put("heading", heading).put("icon", if (latest.vehicle.quality("attitude", latest.nowMs) == Quality.VALID) "aircraft" else "position-only"))
             .put("geometry", JSONObject().put("type", "Point").put("coordinates", org.json.JSONArray().put(position.values[1]).put(position.values[0])))
         style.getSourceAs<GeoJsonSource>("vehicle")?.setGeoJson(feature.toString())
+        val firstPosition = model.mapCenteredSession != latest.vehicle.session
+        if (firstPosition) {
+            map.cameraPosition = CameraPosition.Builder(map.cameraPosition)
+                .target(LatLng(position.values[0]!!, position.values[1]!!))
+                .zoom(AppLayout.aircraftInitialZoom).build()
+            model.mapCenteredSession = latest.vehicle.session
+            lastPosition = position.receivedMs
+        }
         if (locateRequest != handledLocateRequest) {
             map.cameraPosition = CameraPosition.Builder(map.cameraPosition).target(LatLng(position.values[0]!!, position.values[1]!!)).build()
             handledLocateRequest = locateRequest
         }
         if (configuration.follow && position.receivedMs != lastPosition) {
             // 仅首次定位设置初始级别，后续遥测跟随不覆盖用户缩放。
-            val zoom = if (lastPosition < 0) maxOf(map.cameraPosition.zoom, 16.0) else map.cameraPosition.zoom
+            val zoom = if (lastPosition < 0) maxOf(map.cameraPosition.zoom, AppLayout.aircraftInitialZoom) else map.cameraPosition.zoom
             map.cameraPosition = CameraPosition.Builder(map.cameraPosition).target(LatLng(position.values[0]!!, position.values[1]!!)).zoom(zoom).build()
             lastPosition = position.receivedMs
         }

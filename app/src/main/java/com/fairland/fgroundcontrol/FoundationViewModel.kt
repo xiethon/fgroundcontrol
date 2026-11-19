@@ -2,11 +2,17 @@ package com.fairland.fgroundcontrol
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import java.io.InputStream
 import java.io.OutputStream
 
 class FoundationViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as GroundControlApp
+    // 相机初始化按连接会话记忆，切换地图源不会重复抢回视角。
+    var mapCenteredSession: Int? = null
+    val boundaryCenter = kotlinx.coroutines.flow.MutableStateFlow<com.fairland.fgroundcontrol.mission.BoundaryPoint?>(null)
+    val boundary = com.fairland.fgroundcontrol.mission.BoundaryEditor(
+        { com.fairland.fgroundcontrol.mission.BoundaryDraftStore(com.fairland.fgroundcontrol.data.FoundationStore(application.filesDir.resolve("boundary"))) }, viewModelScope)
     val status = app.status
     val connection = app.connection.state
     val preset = app.configuredPreset

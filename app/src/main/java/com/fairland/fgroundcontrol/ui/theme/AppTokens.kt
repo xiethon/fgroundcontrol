@@ -22,6 +22,10 @@ import androidx.compose.ui.unit.sp
 
 /** Figma语义样式入口；页面不得重新定义同类颜色或设计尺寸。 */
 object AppColors {
+    val buttonDisabledText = Color(0xFFD9DCDF)
+    val pointSourceIcon = Color(0xFF6B7280)
+    val creatorSelected = Color(0x1A00D96F)
+    val boundaryPoint = Color(0xFFB94CFF)
     val dashboardPanel = Color(0x66000000)
     val horizonSky = Color(0xFF0A84FF)
     val horizonGround = Color(0xFF00E676)
@@ -55,7 +59,9 @@ object AppColors {
     val iconShadow = Color(0x29000000)
     val mapBackground = Color(0xFFDCE2E5)
     val mapTrack = Color(0xFF2087D0)
-    val mapAircraft = Color(0xFFF06020)
+    // 对齐compass_instrument_arrow.svg的主红色。
+    val compassArrowRed = Color(0xFFEE3424)
+    val mapAircraft = compassArrowRed
 }
 
 object AppSpace {
@@ -110,6 +116,18 @@ object AppType {
 }
 
 object AppLayout {
+    const val mapAircraftIconScale = 1.4f
+    const val aircraftInitialZoom = 16.0
+    val creatorLeadingWidth = 64.dp
+    val creatorActionWidth = 120.dp
+    val creatorHeight = 64.dp
+    val creatorExpandSize = 8.dp
+    val boundaryToolsWidth = 200.dp
+    val boundaryToolHeight = 56.dp
+    val boundaryPanelWidth = 336.dp
+    val boundaryPointRadius = 7f
+    val boundaryPointStroke = 2f
+    val boundaryCrosshair = 56.dp
     val signalColumnWidth = 40.dp
     val signalStatusSize = 20.dp
     const val designWidth = 1280f

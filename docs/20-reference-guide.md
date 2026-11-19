@@ -52,3 +52,5 @@ AI 开始任务先读当前进度与确认记录；涉及界面或功能移植�
 飞行仪表盘功能入口：参考根目录下 `src/qml/app/flight/TelemetryPanel.qml`、`src/qml/components/attitude_indicator/`、`src/qml/components/compass_indicator/`；已确认的高度/缺失数据差异见05及07，不照搬AGL命名和缺失补零。
 
 UI02采用差异：仪表盘资源/配色参考4511:30723及5430:26822，最新用户整页图片覆盖旧版上下分层布局，采用横向组合和外置独立按钮；未连接指南针指北、姿态仪默认水平，相对高度缺失为破折号。地图指南针避让顶栏；卫星/电池图标固定白色，RC信号按254:7522使用图形，既有未接入预览不能作为遥测。参考TelemetryPanel.qml及姿态/罗盘组件的动态绘制，不移植飞行命令。视觉尚待最终用户验收。
+
+大田边界增量：10.2 Task页997:19952，3909:32939为加点面板参考，1199:23173为边界范围调整（不照搬其参数操作），3084:43960为准星资源；列表入口6815:31066。参考FieldMissionToolbar.qml的CROSS_HAIR/map.center及FieldMissionActionPanel.qml退出流程；仅实现单边界草稿及已确认启动续编，不生成路线或喷洒数据。新增BoundaryFlow/BoundaryEditor/BoundaryDraft与地图草稿图层，未做全量规划界面移植。

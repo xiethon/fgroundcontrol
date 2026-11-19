@@ -466,3 +466,82 @@ UI02信号强度设计纠正：核对Figma254:7522，遥控器右侧改为20状�
 - 当前feat/flight-main，本阶段源码、资源清理及文档迁移均纳入收尾；用户授权提交、合入本地main并推送origin。无下一阶段工作。
 
 UI02源码收尾结果：阶段提交335dab4已快进合入本地main并推送origin/main。工作区干净、无关联开发worktree、无独有提交后已删除本地feat/flight-main；同名远程分支不存在，跳过删除，远程跟踪引用已清理。用户全部验收通过，本阶段结束；等待用户发起下一阶段。
+
+### M3启动：契约提取
+
+用户批准推荐范围/顺序/多边形障碍物及先提取后冻结。main工作区干净，从main322f141创建feat/m3-planning-contract。完成首轮AB阈值与地块/自由采用差异提取，补本地任务版本契约及可核对样例建议至12；尚未冻结的连接方式和参数范围待确认。仅文档变更，未实现规划算法、未构建/运行UI、未提交合并。
+
+M3契约确认推进：用户已确认半行距首线、AB阈值/方向限制和草稿/非法参数策略，已同步05/12。高度、速度、行距允许范围仍未给定，不自行填写；T03仍开发中，未实现规划算法。本轮纯文档，diff检查通过，未提交/合并。
+
+2026-11-19：用户授权高度/速度/行距范围沿用参考。读取实际生效的任务参数和地块编辑QML，记录高度1–120m、速度1–12m/s、地块行距1.5–70m及步长至05/12；区分算法阈值、默认值及界面范围，AB专属范围仍继续核对。纯文档，diff检查通过，未修改源码/构建/提交。
+
+M3增量收窄：已核对StartupFlow当前大田进入只读飞行页；参考FieldMissionToolbar支持地图中心十字/飞行器/遥控器三类点源，非简单地图点击。已定位设计10.2 Task页997:19952、作业列表6815:31066、边界编辑1199:23173，Figma会话66c8a488-052a-4b0c-9e70-59b128c85092。当前仅记录范围和参考发现，入口与点源/退出保留边界待确认，尚未修改源码。
+
+大田边界增量：用户确认中心准星加点及列表/新建入口，要求持久草稿并在启动时询问续编。已读取1199:23173设计上下文，参考FieldMissionToolbar默认CROSS_HAIR使用map.center，FieldMissionActionPanel退出/保存。当前尚无边界编辑源码，不能标记实现完成；未启动UI、未提交。
+
+2026-11-19边界增量实施前核对：现有改动仅05/06/07/12四份本阶段契约文档，无源码改动或独有提交；从main创建并切换feat/m3-field-boundary，文档原样保留。启动弹窗否定操作以及已有草稿再次新建的处理尚无明确确认，涉及草稿保留/覆盖，先集中确认，不擅自删除。尚未实现源码，未运行UI或提交。
+
+### 边界编辑实施：草稿内核
+
+- feat/m3-field-boundary保留前期文档改动，已实现纯Kotlin边界点/版本模型和FoundationStore原子持久化；拒绝非有限/越界/重复点，损坏记录明确失败，不返回空草稿覆盖原文件。
+- 修正设计定位：1199:23173是边界范围调整，不能充当加点界面；已核对3909:32939加点面板，中心准星点源变体仍需核对后接入。参考固定2383502的FieldMissionToolbar/ActionPanel。
+- assembleDebug、testDebugUnitTest、lintDebug通过，新增正常保存重开/顺序版本、非法重复点、损坏记录不补空3项回归，日志/private/tmp/fgc-boundary-draft-core.log。
+- 当前仅草稿内核完成；尚未接入地图加点、列表/编辑入口、启动续编弹窗及UI失败提示，整项需求未完成，不能验收。未启动UI、未提交合并。
+
+### 大田边界增量：入口、加点与恢复集成
+
+- 已接入大田飞行页作业列表→新建/继续→边界编辑；地图中心准星添加WGS84坐标，顺序绘制紫色点与白色连线，≥3点闭合显示边界，不生成航线/面积或飞行指令。仅一个本地草稿。重复点按钮禁用，非法值模型拒绝。
+- BoundaryEditor串行写盘、IO线程创建/加载存储；写入成功才发布，失败保留旧草稿并提示重试。已有草稿新建须确认丢弃；退出弹窗确认保留已保存草稿；启动只对原有草稿询问继续，暂不继续不删除，新建不误触发启动弹窗。进入编辑关闭地图跟随，避免准星随飞行器移动。
+- 地图源切换重新建立草稿图层、重新渲染已保存点；原地图生命周期/会话保护保留。草稿由ViewModel管理而非Composable状态，不随编辑面板重组丢失。
+- Figma：已读取3909:32939加点布局和1199:23173边界编辑上下文，准星独立资源3084:43960已本地化，来源/尺寸/哈希见assets/design/field-boundary。范围采用差异：仅保留本轮列表/新建/续编/加点/退出；不复制设计示例航线/喷洒/面积，不开放未实现参数面板。布局使用现有token与新增边界token，视觉未验收。
+- 参考固定2383502523581d0755ebabb948b71df21aae845a，FieldMissionToolbar的map.center/CROSS_HAIR及ActionPanel退出参考；不照搬飞行器/遥控器点源、自动规划、航线保存有效性约束。仅保存边界草稿，不宣称已保存完整可执行任务。
+- assembleDebug、49项单测（0失败/错误）、lintDebug及diff检查通过，日志/private/tmp/fgc-boundary-flow.log。新增回归覆盖保存重开/顺序/版本、非法/重复坐标、损坏记录不补空，以及写入失败保持旧版本/重试恢复。
+- UI待用户验证：大田→作业列表→新建，移动地图后连续添加不同中心点；点/连线随缩放旋转，地图切源后保留；重复位置不可重复添加。退出确认后继续保留；完整重启弹窗可续编，选暂不继续草稿仍在；已有草稿新建必须二选一确认。5/7寸横屏、断网底图错误及按钮遮挡由用户复核。未运行UI、未截图自动化，未提交合并。
+
+### 新建任务入口按参考复合按钮纠正
+
+- 用户明确新建在飞行地图右侧中间；核对参考2383502的MissionViewLayer.qml→MissionCreatorPanel.qml→FGCComboButton.qml：右边距8、垂直居中、左段展开类型列表、默认地块、右段Plan创建。改为大田飞行页直接显示该复合按钮，不再强制作业列表后才能新建；列表保留续编功能。左段列表向左展开，地块可创建，自由/AB仅暂不支持，不下发命令。
+- 5个图标从参考assets/icons/pages/flight复制并转换PNG，原件/哈希见assets/design/field-boundary。尺寸/颜色/布局使用统一token，草稿覆盖确认与启动续编保留。
+- assembleDebug、lintDebug及diff检查通过，日志/private/tmp/fgc-creator-button.log；未运行UI，右侧位置、左段展开、右段创建及已有草稿确认待用户验证；未提交合并。
+
+新增任务细节优化：按用户参考图改用连续白色圆角复合按钮，左段浅底、左下展开指示、右段图标+规划；移除Material TextButton内置padding/胶囊点击面造成的分段错位。类型列表大田航线置顶、默认高亮，其余自由/AB暂不支持；尺寸/颜色复用token，新增creatorSelected语义色。assembleDebug/Lint/diff通过，日志/private/tmp/fgc-creator-refinement.log；UI由用户验证，未启动UI或提交。
+
+全局Toast位置：统一入口MainActivity由底部居中改为顶部居中，避让顶部/水平safeDrawing，并按状态栏缩放高度及字体缩放加sm间距；保留半透明底色与时长。代码检索仅此统一Toast入口，确认类AlertDialog不作为Toast移动。assembleDebug/diff检查通过，日志/private/tmp/fgc-toast-top.log；UI未运行，所有暂不支持提示位置待用户复核，未提交合并。
+
+Toast进一步上移：状态栏下方间距由sm12dp缩为xxs4dp，整体上移8dp，顶部安全区和水平居中保留。assembleDebug及diff检查通过，日志/private/tmp/fgc-toast-top-spacing.log；视觉待用户复核，未提交。
+
+Toast紧贴顶栏下方：顶部避让与TopStatusBar统一采用displayCutout，移除safeDrawing额外状态栏高度；顶栏高度后仅留xxs×界面比例间距。assembleDebug和diff检查通过，日志/private/tmp/fgc-toast-below-bar.log；真机显示待用户验证，未提交。
+
+任务类型面板外部关闭：将展开选项改为左侧锚定Popup，启用点击外部/返回键关闭；选项内部点击仍选择并关闭，不为地图添加全屏透明触摸拦截层。复合主按钮位置不随展开改变。assembleDebug、lintDebug及diff检查通过，日志/private/tmp/fgc-creator-outside-dismiss.log；UI待用户验证外点关闭/内部选择/关闭后地图手势，未运行UI或提交。
+
+边界右侧功能组优化：按用户图片，右侧居中类型卡+独立准星/添加复合按钮，右下取消/保存组，左侧设置不实现；默认边界点高亮，其他类型仅暂不支持。类型/取消/保存6个图标使用固定参考项目原SVG转换并记录哈希。保存按钮调用原子保存当前边界草稿，不生成可执行任务；取消仍确认并保留草稿。样式使用统一token，右侧宽度200、高度56为设计基准。构建/49项单测/Lint通过，日志/private/tmp/fgc-boundary-tools.log及fgc-boundary-tools-final.log；未运行UI，5/7寸布局、保存/取消、非边界提示待用户验证，未提交合并。
+
+新建直接替换：按用户要求移除旧草稿覆盖确认，点击规划直接写空草稿成功后进入编辑；失败不发布空草稿。补充新建替换后内存/磁盘均空的回归。assembleDebug、49项单测、Lint及diff检查通过，日志/private/tmp/fgc-boundary-new-replace.log及fgc-boundary-new-replace-test.log；未运行UI，点击新建无弹窗及旧点清空待用户复核，未提交合并。
+
+打点模式与图标：读取Figma3909:33286上下文，四类点图标改用设计独立SVG导出（原稿/PNG/哈希见assets/design/field-boundary）；添加复合按钮左段可展开打点模式，准星模式可用，飞行器/遥控器模式仅暂不支持且不切换点源；外点可关闭菜单。按钮内准星通过统一pointSourceIcon灰色token呈现，地图中心准星保持白色。assembleDebug/Lint/diff检查通过，日志/private/tmp/fgc-point-source.log；未运行UI，菜单/图标颜色及四类型视觉待用户验收，未提交合并。
+
+添加复合按钮细化：读取用户指定7348:39752；该节点本身仅Edit/Load，无Add实例，故仅采用其白底/深色文字/灰色禁用态等公共按钮样式，不宣称直接取得Add节点。移除右段Material TextButton胶囊点击面，改整段矩形点击区域，默认字号/比例及左侧准星点源逻辑保留；禁用文字颜色统一token。assembleDebug/Lint/diff检查通过，日志/private/tmp/fgc-add-button-style.log，未启动UI或提交，视觉待用户验证。
+
+打点方式展开按用户截图优化：改为左侧锚定紧凑白底圆角三行，十字准星首行绿底/绿色图标文字，飞行器/遥控器灰色图标；外点与返回关闭，后两项提示暂不支持且不改变点源。图标采用Figma导出飞行器及既有Figma遥控器图标（独立RC下载失败，复用本地图形），来源/哈希更新。菜单尺寸/颜色/文字复用token，短标签与截图对齐。assembleDebug、Lint及diff检查通过，日志/private/tmp/fgc-point-source-panel.log；未运行UI，位置/选中态/关闭与添加行为待用户复核，未提交。
+
+打点方式面板间距：按用户截图将左展开Popup额外左移sm12×界面比例，添加复合按钮位置不变；使用LocalDensity换算像素，避免不同密度间距失真。assembleDebug/diff通过，日志/private/tmp/fgc-point-source-gap.log；视觉待复核，未提交。
+
+真机打点菜单展开导致底部按钮跳动：代码发现Popup使用focusable=true，而Activity仅获得焦点时重设沉浸系统栏，存在弹窗获取焦点改变系统栏/insets的风险。打点Popup改为不抢焦点，外点关闭保留；页面BackHandler优先关闭菜单，避免返回误触发退出编辑。底部取消保存布局不改位置。assembleDebug、Lint和diff检查通过，日志/private/tmp/fgc-popup-window-focus.log；未运行UI，根因与修复效果须真机复验：反复展开关闭时取消保存位置不变、外点/返回只关闭菜单。未提交合并。
+
+连接成功相机初始化：每次地图观察到断连后重置初始化记录，首次有效position到达时以飞行器居中、zoom16；不再依赖持久follow开关。会话记录放ViewModel，切源不重复初始化；后续跟随保留用户缩放，手势仍关闭跟随，失效坐标不移动相机。assembleDebug、49项单测和Lint/diff通过，日志/private/tmp/fgc-connect-map-center.log；未运行UI/SITL，首次定位、延迟GPS、断连重连、手动拖动及切源回归待用户验证，未提交。
+
+地图飞行器图标放大：SymbolLayer图标比例统一token=1.4，飞行器及仅位置标记放大40%，不改变位置/朝向逻辑。assembleDebug/diff通过，日志/private/tmp/fgc-aircraft-icon-size.log；视觉待用户验证，未提交。
+
+地图飞行器颜色：核对指南针原SVG双红色箭头，地图统一采用其主红#EE3424，新增compassArrowRed语义token并由mapAircraft引用，原指南针资源保留双色/描边。assembleDebug/diff通过，日志/private/tmp/fgc-aircraft-icon-color.log；视觉待用户验证，未提交。
+
+飞行/编辑共用地图：合并StartupFlow的flight/boundary-list/boundary-edit为同一Compose分支及BoundaryFlow调用位置，仅变更覆盖面板，MapHomeScreen/VehicleMap调用位置保留，不因进入编辑重建原生MapView；相机/旋转/缩放/地图源保留。进入编辑仍按既有策略关闭飞行器跟随，防止准星自动移动，follow配置不改变地图revision。assembleDebug/Lint/diff检查通过，日志/private/tmp/fgc-shared-flight-map.log；未运行UI，真机导航前后相机/缩放/旋转及退出往返待用户验证，未提交合并。
+
+规划类型展开导致仪表盘位移：发现新建类型Popup仍focusable=true，与沉浸系统栏存在同类焦点/insets风险；统一改为不抢焦点，另以BackHandler优先关闭类型列表，外点关闭保留。仪表盘布局本身不改。assembleDebug/Lint/diff通过，日志/private/tmp/fgc-creator-focus-layout.log；未运行UI，真机反复展开/关闭时仪表盘位置及返回/外点关闭待验证，未提交合并。
+
+### 大田边界增量全阶段Review与验收（2026-11-19）
+
+- 用户明确第1/2项真机界面交互和草稿全流程已验证，授权继续Review与本地收尾。核对相对main全部源码差异及未跟踪mission/BoundaryFlow/资源/测试，不仅最后修改。
+- 修复：边界图层在遥测每次刷新重复构造GeoJSON，增加点列表与source身份缓存，仅点变化/切源重建时更新；不改变界面语义。IO原子保存、互斥串行、写入成功才发布、错误保留旧草稿与重试路径已检查；没有新增飞行指令，编辑关闭跟随，无自动续飞。
+- 参考当前HEAD=a73f9c6312a5904fe606cecd9850fec3870bd532，与记录2383502比较MissionCreatorPanel/FGCComboButton/FieldMissionToolbar/FieldMissionActionPanel无差异；采用边界仍以用户最终确认覆盖早期交互。设计节点3909:32939/33286、独立SVG及截图采纳差异见20和此前记录，token使用已核对。17个本轮清单资源路径/哈希通过。
+- assembleDebug、49项单测、lintDebug通过，日志/private/tmp/fgc-m3-boundary-review.log；正常保存重开、非法/重复点、损坏记录和写失败恢复回归通过。用户验收与AI自动验证分别记录，不互相冒充。
+- 本轮仅单边界加点/草稿增量已验收；左侧设置、障碍物、自由/AB、航线生成、上传执行均不宣称完成，T08/T09完整规划任务仍待后续。无本增量已知阻塞，具备本地源码收尾条件；用户未授权本轮推送，不推送。

@@ -1,0 +1,175 @@
+{
+  "fileKey": "ktOZrqqgi1O4DQlVo4k64X",
+  "nodeId": "3084:43960",
+  "assets": [
+    {
+      "file": "app/src/main/res/drawable-nodpi/field_crosshair.png",
+      "size": [
+        56,
+        56
+      ],
+      "sha256": "c4465dd643bfafa3f2f2936e4a10b545f90cca1439c6b17012b40b33909baabb",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/field_task_type_field.png",
+      "size": [
+        40,
+        40
+      ],
+      "sha256": "cbc2823d990f1a9be7e0d0dcb0a48b3cb1afaa671063d9724bf3d31c57d922ff",
+      "source": "reference/assets/icons/pages/flight/task_type_field.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/field_task_type_free.png",
+      "size": [
+        40,
+        40
+      ],
+      "sha256": "5fd553d10781b0ad969b6d454c48c90c5fce0facfa8864dfb1abdc6f14766352",
+      "source": "reference/assets/icons/pages/flight/task_type_free.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/field_task_type_ab.png",
+      "size": [
+        40,
+        40
+      ],
+      "sha256": "f83e029739df748797073562ee2c7a5a2bb038d752a5fe2266391409f0645b9c",
+      "source": "reference/assets/icons/pages/flight/task_type_ab.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/field_task_type_expand.png",
+      "size": [
+        8,
+        8
+      ],
+      "sha256": "7339cadf4a3e4c30acd00441f50e3c0531c8bd91f2c23a29bea6c8a6915e9b64",
+      "source": "reference/assets/icons/pages/flight/task_type_expand.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/field_task_plan_indicator.png",
+      "size": [
+        24,
+        24
+      ],
+      "sha256": "5830da207cc3df829e4db28c3ca5ff81422afaf8b32385358156752238e9326f",
+      "source": "reference/assets/icons/pages/flight/task_plan_indicator.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/boundary_add_boundary.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "a298d4466d4f476f3460e0e8de7505bdd6389fe49901a09da40920eca15deb11",
+      "source": "reference/assets/icons/pages/mission/add_boundary.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/boundary_add_obstacle.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "add300d5383e449b46391753601c3e8088ad04eda461c97f34da9ef7771a58fa",
+      "source": "reference/assets/icons/pages/mission/add_obstacle.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/boundary_add_nospray.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "c9ae1287a23b26d602cb3297b6523ce9f12f93773830ee025ce3efd2b59c4983",
+      "source": "reference/assets/icons/pages/mission/add_nospray.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/boundary_add_obstacle_round.png",
+      "size": [
+        24,
+        24
+      ],
+      "sha256": "4a5d020aa499a8a7a4ce161bb418abc11c20f8200963d7a69a6f9e68ceb702a4",
+      "source": "reference/assets/icons/pages/mission/add_obstacle_round.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/boundary_cancel.png",
+      "size": [
+        24,
+        24
+      ],
+      "sha256": "aa0de54f3807b3b99c2c1575ec897d86a6d1e84f3e3165c1016672853e219d5e",
+      "source": "reference/assets/icons/pages/mission/cancel.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/boundary_save.png",
+      "size": [
+        24,
+        24
+      ],
+      "sha256": "f8c00989f6bf8a3ff488dd3acb6dc36016364e4c443937254643235fb1cda11a",
+      "source": "reference/assets/icons/pages/mission/save.svg",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_point_nospray.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "7d2b9431a2eb9469e82b4262db4bcddae3f594e5d995e97400e9778368125427",
+      "source": "Figma3909:33286 independent point icon",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_point_obstacle.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "7f4e3c1ab4350029387c8cc3a2386e2e00814f18e7af10687fd812db4dfb48c2",
+      "source": "Figma3909:33286 independent point icon",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_point_boundary.png",
+      "size": [
+        32,
+        32
+      ],
+      "sha256": "f37099a22aa34d58f5cbe2e4f19a02c66a193054739c1af756326468bf4e488a",
+      "source": "Figma3909:33286 independent point icon",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_point_round.png",
+      "size": [
+        24,
+        24
+      ],
+      "sha256": "67c989e798d94f04228069cc4f0b887474820fe1854e8e78c905506fd9ace535",
+      "source": "Figma3909:33286 independent point icon",
+      "role": "runtime"
+    },
+    {
+      "file": "app/src/main/res/drawable-nodpi/figma_source_aircraft.png",
+      "size": [
+        40,
+        40
+      ],
+      "sha256": "ab932ad39193335f574af055de2400efb4e2a2bde7b0b752c973a326cb52749c",
+      "source": "Figma3909:32939 IconDrone",
+      "role": "runtime"
+    }
+  ]
+}

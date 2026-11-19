@@ -47,12 +47,15 @@ class MainActivity : ComponentActivity() {
                             toastVisible = false
                         }
                     }
-                    Box(Modifier.fillMaxSize()) {
+                    BoxWithConstraints(Modifier.fillMaxSize()) {
+                        val toastScale = AppLayout.scale(maxWidth, maxHeight)
+                        val toastFontScale = androidx.compose.ui.platform.LocalDensity.current.fontScale.coerceAtLeast(1f)
                         com.fairland.fgroundcontrol.ui.StartupFlow(model) { toastRequest++ }
                         if (toastVisible) Surface(
-                            modifier = Modifier.align(Alignment.BottomCenter)
-                                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-                                .padding(horizontal = AppSpace.lg, vertical = AppSpace.lg)
+                            modifier = Modifier.align(Alignment.TopCenter)
+                                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+                                .padding(horizontal = AppSpace.lg)
+                                .padding(top = AppLayout.flightBarHeight * toastScale * toastFontScale + AppSpace.xxs * toastScale)
                                 .semantics { liveRegion = LiveRegionMode.Polite },
                             color = AppColors.toast, shape = RoundedCornerShape(AppRadius.alternative)
                         ) {
