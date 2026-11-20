@@ -9,9 +9,29 @@ import java.net.*
 
 /** 仅本机回环合成帧，不启动Activity或发送飞行指令。 */
 class DirectUdpProbe : Instrumentation() {
+    private var addressProbe = false
+    private var nativePlanner = false
     private var sitl = false
-    override fun onCreate(arguments: Bundle?) { super.onCreate(arguments); sitl = arguments?.getString("sitl") == "true"; start() }
+    override fun onCreate(arguments: Bundle?) { super.onCreate(arguments); addressProbe = arguments?.getString("taskAddress") == "true"; sitl = arguments?.getString("sitl") == "true"; nativePlanner = arguments?.getString("nativePlanner") == "true"; start() }
     override fun onStart() {
+        if(addressProbe) {
+            val result=Bundle()
+            try {TaskAddressProbe.verify();result.putString("task_address","PASS: request/response, cache, missing key, failure fallback, retry and cancellation");finish(-1,result)}
+            catch(error: Throwable) {result.putString("error",error.stackTraceToString());finish(0,result)}
+            return
+        }
+        if (nativePlanner) {
+            val result = Bundle()
+            try {
+                NativePlannerProbe.verify(targetContext.cacheDir)
+                result.putString("native_planner", "PASS: JNI geometry/limits and domain/editor generate, persist, invalidate, regenerate")
+                finish(-1, result)
+            } catch (error: Throwable) {
+                result.putString("error", error.stackTraceToString())
+                finish(0, result)
+            }
+            return
+        }
         val out = Bundle()
         val adapter = DirectMavlinkConnection(targetContext)
         try {

@@ -17,11 +17,11 @@ JDK 21（编译目标 Java 17）、Android SDK 36 / Build Tools 36.0.0、Gradle 
 
 APK：`app/build/outputs/apk/debug/app-debug.apk`。测试报告：`app/build/reports/tests/testDebugUnitTest/index.html`；Lint：`app/build/reports/lint-results-debug.html`。
 
-MAVSDK Java/server 4.1.0 配套固定，C++ 共享运行库来自 NDK 28.2.13676358；仅连接原型，不开放飞行控制。需要支持的 ARM 设备验证，不能用构建通过替代链路验收。
+通信使用标准MAVLink XML生成编解码与直接UDP；本地地块规划通过JNI调用纯C++核心。固定NDK 28.2.13676358、CMake3.22.1，不引入MAVSDK或Qt运行库；不开放飞行控制。构建不能代替目标硬件运行验收。
 
 ## 当前能力与限制
 
-自动 UDP 连接、只读遥测/健康提示、天地图与 MapTiler 切换、授权栅格 PMTiles 导入；保留原子本地记录、三类日志轮转/ZIP 导出和 CSV 回放。普通96/飞行32有界日志队列，JVM崩溃尽力同步保存；不保证原生崩溃或强杀堆栈。无规划、上传、飞行命令。
+自动 UDP 连接、只读遥测/健康提示、天地图与 MapTiler 切换、授权栅格 PMTiles 导入；保留原子本地记录、三类日志轮转/ZIP 导出和 CSV 回放。普通96/飞行32有界日志队列，JVM崩溃尽力同步保存；不保证原生崩溃或强杀堆栈。已接入无障碍单地块本地规划/草稿重开，UI待用户验收；无上传或飞行命令。
 - [当前进度](docs/07-progress.md)
 - [文档索引](docs/README.md)
 
@@ -43,20 +43,20 @@ ANDROID_HOME=/path/to/android-sdk scripts/connect-sitl-emulator.sh emulator-5554
 
 日志正式上限：每类20MiB（5MiB当前文件+3归档）、最多7天。原生16KiB对齐警告已消除，最终APK的ELF/ZIP对齐检查通过，但仍不能替代16KiB页设备运行验证。
 
-原生接入：SDK运行在非导出的 `:mavsdk` 独立进程；主进程用Messenger管理会话。切换/停止退出旧SDK进程，避免等待飞控时阻塞主进程或并发销毁native对象。NDK 28.2.13676358为构建必需项，可通过SDK Manager安装；运行库及NOTICE在构建时从固定NDK生成，不依赖参考仓库。
+原生规划：纯C++核心与安全桥在后台经JNI调用，依赖随源码固定，构建不访问参考仓库。NDK28.2.13676358/CMake3.22.1为构建必需项；运行库、依赖许可证及NOTICE随APK打包。原生计算不支持协程强制中断，采用保守输入预算、串行化与旧结果丢弃，见[native说明](native/field-planner/README.md)。
 
 无UI设备探针：构建 `:app:assembleDebugAndroidTest`，安装主/测试APK后执行：
 
 ```sh
-adb -s emulator-5554 shell am instrument -w com.fairland.fgroundcontrol.test/com.fairland.fgroundcontrol.SdkProbeInstrumentation
+adb -s emulator-5554 shell am instrument -w com.fairland.fgroundcontrol.test/com.fairland.fgroundcontrol.DirectUdpProbe
 # 已准备PX4 SITL与模拟器UDP映射时：
-adb -s emulator-5554 shell am instrument -w -e sitl true com.fairland.fgroundcontrol.test/com.fairland.fgroundcontrol.SdkProbeInstrumentation
+adb -s emulator-5554 shell am instrument -w -e sitl true com.fairland.fgroundcontrol.test/com.fairland.fgroundcontrol.DirectUdpProbe
 python3 scripts/check-native-alignment.py app/build/outputs/apk/debug/app-debug.apk
 ```
 
 探针会重启应用进程并连接/断开测试链路，不启动Activity、不发送飞行命令；仅用于开发/仿真环境。成功输出 `INSTRUMENTATION_CODE: -1`，失败不得视为通过。ZIP另用SDK的 `zipalign -c -P 16 4` 检查。
 
-完整设备自动验证：先构建 `:app:assembleDebugAndroidTest`，再执行 `scripts/verify-m1-device.sh emulator-5554 true`（需要已运行SITL并配置映射）；第二参数false可只检查原生生命周期/存储/日志。脚本明确校验INSTRUMENTATION_CODE，不以adb退出码替代测试结果。
+规划无界面端到端回归使用相同runner，增加 `-e nativePlanner true`；验证JNI生成/参数与边界拒绝、版本隔离及持久化，不启动UI。M1时期的SDK设备脚本属于历史验证，不能作为当前JNI/直连UDP验收入口。
 
 M1当前环境自动检查完成，用户及目标硬件待验收项见[清单](docs/16-m1-acceptance.md)。应用首次启动请求通知权限，拒绝不阻止连接服务，但通知栏可能不显示。
 
@@ -96,16 +96,7 @@ maps.maptiler.key=你的MapTiler密钥
 
 M2详细验证及未验收项见 [M2记录](docs/17-m2-validation.md)。
 
-M2无UI协议与故障回归（仅开发Android模拟器，需已构建主/测试APK、eth0/10.0.2.15可用）：
-
-```sh
-# 标准MAVLink测试源，需本地Python已安装pymavlink
-ANDROID_HOME=/path/to/android-sdk python3 scripts/verify-m2-protocol.py emulator-5554
-# 固定官方v1.17.0已构建目录；独立SIH实例1和临时运行目录
-ANDROID_HOME=/path/to/android-sdk python3 scripts/verify-m2-px4-restart.py emulator-5554 /path/to/isolated-px4
-```
-
-使用专用UDP14560/14561、控制14660/14661及独立SIH的14551/18571；占用时停止，不覆盖已有映射。后者要求实例1空闲。脚本结束清理自己创建的映射/进程，保留运行日志目录；不会重启用户已有SITL或启动Activity。协议回归验证SDK接收时刻的新鲜度，不承诺拒绝所有飞控旧时间帧。
+M1/M2时期的MAVSDK设备脚本已移除（其runner已不存在）；历史证据保留在阶段记录，不再提供不能运行的验证入口。当前无界面回归使用前述DirectUdpProbe，以及[native规划探针说明](native/field-planner/README.md)。
 
 通信迁移分支：当前使用直接MAVLink UDP，XML/生成器/心跳与消息范围见protocol/README.md；默认无UI测试runner为DirectUdpProbe。历史MAVSDK说明不代表本分支当前运行链路。完整迁移验收限制见docs/07-progress.md。
 

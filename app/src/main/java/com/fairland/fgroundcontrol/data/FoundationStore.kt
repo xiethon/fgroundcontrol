@@ -21,6 +21,16 @@ class FoundationStore(private val root: File) {
             Files.move(temp.toPath(), target.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
         } finally { temp.delete() }
     }
+    @Synchronized fun keys(prefix: String): List<String> = checkNotNull(root.listFiles()) { "Storage directory unavailable" }
+        .filter { it.isFile && it.name.endsWith(".txt") && it.name.startsWith(prefix) }
+        .map { it.name.removeSuffix(".txt") }.sorted()
+    @Synchronized fun restoreModified(key: String,time: Long) { Files.setLastModifiedTime(file(key).toPath(),java.nio.file.attribute.FileTime.fromMillis(time)) }
+    @Synchronized fun modified(key: String): Long = file(key).lastModified()
+    @Synchronized fun remove(key: String) {
+        val target = file(key)
+        check(!target.exists() || target.isFile) { "Invalid stored record" }
+        Files.deleteIfExists(target.toPath())
+    }
     @Synchronized fun read(key: String): String? {
         val target = file(key)
         if (!target.exists()) return null

@@ -12,6 +12,11 @@ import java.util.zip.GZIPInputStream
 
 data class MapConfiguration(val provider: String = "tianditu", val style: String? = null, val remoteStyle: Boolean = false, val status: String = "unconfigured", val attribution: String = "© 天地图", val bounds: OfflineArchive? = null, val follow: Boolean = true, val revision: Long = System.nanoTime())
 class MapRepository(private val root: File, private val scope: CoroutineScope, private val defaultTiandituKey: String = "", private val defaultMaptilerKey: String = "") {
+    private val taskAddresses = TaskAddressResolver()
+    suspend fun taskAddress(point: com.fairland.fgroundcontrol.mission.BoundaryPoint): String? {
+        val key=withContext(Dispatchers.IO) { lock.lock();try { loadKeys();tiandituKey } finally { lock.unlock() } }
+        return taskAddresses.resolve(point,key)
+    }
     private val mutableState = MutableStateFlow(MapConfiguration())
     val state = mutableState.asStateFlow()
     private var tiandituKey = defaultTiandituKey

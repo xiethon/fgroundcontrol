@@ -1,0 +1,73 @@
+{
+  "fileKey": "ktOZrqqgi1O4DQlVo4k64X",
+  "node": "1199:22984",
+  "assets": [
+    {
+      "source": "assets/design/task-selected/exit.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_selected_exit.png",
+      "dimensions": "24x24",
+      "sourceSha256": "b262b651e283528a6ebc5ce8b4b9dceb3a47e8cd0631dfdd6760d6fddb68adf6",
+      "runtimeSha256": "76ec44d7d0bff538a29be8af8673dbb69b67a246bf656da5d22d819c62d44fba",
+      "conversion": "2x rsvg; original paths/filters preserved"
+    },
+    {
+      "source": "assets/design/task-selected/edit.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_selected_edit.png",
+      "dimensions": "24x24",
+      "sourceSha256": "cd1e6c5d419891a554763dc3c1a2edd11fcdb6afa5fc6b65885f54284170772a",
+      "runtimeSha256": "df75447904ff9981a827e1186c5a1a5739bb1e720a7beaf469d2bb1e2d51f53a",
+      "conversion": "2x rsvg; original paths/filters preserved"
+    },
+    {
+      "source": "assets/design/task-selected/load.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_selected_load.png",
+      "dimensions": "24x24",
+      "sourceSha256": "3978a81b393f8d41f3658f4c39e413cb1fea8309cb60e52a077a162c493e599c",
+      "runtimeSha256": "920cf1714bc1a294e44f368ec802a22318aaf80e851e61916f189944793f764e",
+      "conversion": "2x rsvg; original paths/filters preserved"
+    },
+    {
+      "source": "assets/design/task-selected/check.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_selected_check.png",
+      "dimensions": "32x32",
+      "sourceSha256": "dff28b30f34bc1b816473d25c72cd2a1695ec35a0af157e65431b70b246caba9",
+      "runtimeSha256": "1a16fbf3c52d17a60544d0cd012cfc3f8e224d74a6da3e6662db7328acd2e2b3",
+      "conversion": "2x rsvg; original paths/filters preserved"
+    },
+    {
+      "source": "assets/design/task-selected/location.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_selected_location.png",
+      "dimensions": "24x24",
+      "sourceSha256": "7543aa2a8454062181b633aad1164183f98e90fe22b6db264dd090d2c69774b9",
+      "runtimeSha256": "c26915d9fdf716661a07d980bf00be0680ca7f3ea0dfa334ecd612e57e0bcab1",
+      "conversion": "2x rsvg; original paths/filters preserved"
+    },
+    {
+      "source": "assets/design/task-selected/unselected.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_unselected_check.png",
+      "dimensions": "32x32",
+      "sourceSha256": "cf60d95f34acaa95be62be41b1e58ce72b98b0ee2484802116425a57d5213b59",
+      "runtimeSha256": "37f4a23999303cd2ce69b5369f3ec0197112c4410e7448093ce14fe3196c7d87",
+      "conversion": "2x rsvg; original paths/filters preserved",
+      "reference": "a73f9c6312a5904fe606cecd9850fec3870bd532:assets/icons/pages/mission/mission_unselected_indicator.svg"
+    },
+    {
+      "source": "assets/design/task-selected/route_start.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_route_start.png",
+      "node": "176:4186",
+      "dimensions": "38x24",
+      "sourceSha256": "2fc8d2b34cc6b2e0ae1ae267203e4e679ab309167d4c85c5d98e36e5b7cfaaef",
+      "runtimeSha256": "c9d6b995e04f19d5ac290dbad61227dd95f98e7fdad105ae261ebfe03237ba77",
+      "conversion": "2x rsvg; original paths/filters preserved; S/E rendered separately with project font"
+    },
+    {
+      "source": "assets/design/task-selected/route_end.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_route_end.png",
+      "node": "176:4180",
+      "dimensions": "24x38",
+      "sourceSha256": "c813331b3b737ec399f2a383d34c8af7d022e59c1345e78a182315e732388974",
+      "runtimeSha256": "7ba88607e42b877e59785404133680ef40819637163b7847928010d2329b63a1",
+      "conversion": "2x rsvg; original paths/filters preserved; S/E rendered separately with project font; rotate -90 degrees at presentation, preserving aspect ratio"
+    }
+  ]
+}

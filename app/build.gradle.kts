@@ -16,7 +16,7 @@ val sourceBranch = providers.exec { commandLine("git", "rev-parse", "--abbrev-re
 val sourceCommit = providers.exec { commandLine("git", "rev-parse", "--short=12", "HEAD") }.standardOutput.asText.get().trim()
 val sourceDirty = providers.exec { commandLine("git", "status", "--porcelain") }.standardOutput.asText.get().isNotBlank()
 val sourceDigest = MessageDigest.getInstance("SHA-256").apply {
-    (fileTree("src/main").files + file("build.gradle.kts")).sortedBy { it.relativeTo(projectDir).path }.forEach { source ->
+    (fileTree("src/main").files + rootProject.fileTree("native/field-planner").files + file("build.gradle.kts")).sortedBy { it.relativeTo(projectDir).path }.forEach { source ->
         update(source.relativeTo(projectDir).path.toByteArray())
         source.inputStream().use { input ->
             val buffer = ByteArray(8192)
@@ -30,11 +30,12 @@ android {
     ndkVersion = "28.2.13676358"
     sourceSets.getByName("main").jniLibs.directories.add(layout.buildDirectory.dir("generated/cxx-runtime").get().asFile.path)
     sourceSets.getByName("main").assets.directories.add(layout.buildDirectory.dir("generated/runtime-notices").get().asFile.path)
-    defaultConfig { testInstrumentationRunner = "com.fairland.fgroundcontrol.DirectUdpProbe"; applicationId = "com.fairland.fgroundcontrol"; minSdk = 28; targetSdk = 36; versionCode = 1; versionName = "0.1.0-alpha.1"
+    defaultConfig { externalNativeBuild { cmake { arguments += "-DANDROID_STL=c++_static" } }; testInstrumentationRunner = "com.fairland.fgroundcontrol.DirectUdpProbe"; applicationId = "com.fairland.fgroundcontrol"; minSdk = 28; targetSdk = 36; versionCode = 1; versionName = "0.1.0-alpha.1"
         buildConfigField("String", "BUILD_IDENTITY", "\"direct-udp:$sourceBranch:$sourceCommit:dirty=$sourceDirty:$sourceDigest\"")
         buildConfigField("String", "TIANDITU_TOKEN", localMapKey("maps.tianditu.token"))
         buildConfigField("String", "MAPTILER_KEY", localMapKey("maps.maptiler.key"))
     }
+    externalNativeBuild { cmake { path = rootProject.file("native/field-planner/CMakeLists.txt"); version = "3.22.1" } }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }
@@ -47,7 +48,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 }
 
-// MAVSDK 4.1.0 AAR 依赖共享 C++ 运行库但未包含它；从固定 NDK 可复现打包。
+// 统一从固定NDK打包共享C++运行库，原生规划库采用静态运行库避免重复文件。
 val packageCxxRuntime by tasks.registering(Sync::class) {
     val ndkRoot = androidComponents.sdkComponents.sdkDirectory.map { it.dir("ndk/28.2.13676358") }
     val host = if (System.getProperty("os.name").startsWith("Mac")) "darwin-x86_64" else if (System.getProperty("os.name").startsWith("Windows")) "windows-x86_64" else "linux-x86_64"
@@ -67,6 +68,10 @@ tasks.named("preBuild") { dependsOn(packageCxxRuntime) }
 
 val packageRuntimeNotices by tasks.registering(Sync::class) {
     from(androidComponents.sdkComponents.sdkDirectory.map { it.file("ndk/28.2.13676358/NOTICE.toolchain") })
+    from(rootProject.file("native/field-planner/COPYING")) { into("licenses/field-planner") }
+    from(rootProject.file("native/field-planner/NOTICE.txt")) { into("licenses/field-planner") }
+    from(rootProject.file("native/field-planner/third-party/boost/LICENSE_1_0.txt")) { into("licenses/field-planner") }
+    from(rootProject.file("native/field-planner/third-party/clipper2/LICENSE")) { into("licenses/field-planner"); rename { "CLIPPER2-LICENSE.txt" } }
     into(layout.buildDirectory.dir("generated/runtime-notices"))
 }
 tasks.named("preBuild") { dependsOn(packageRuntimeNotices) }

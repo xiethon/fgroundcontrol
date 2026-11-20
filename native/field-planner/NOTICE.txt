@@ -1,0 +1,10 @@
+Local field planner source reference: a73f9c6312a5904fe606cecd9850fec3870bd532
+Local modifications and original hashes: manifest.json
+
+polygon_coverage_planning implements algorithms for coverage planning in general polygons with holes.
+Copyright (C) 2019, Rik Bähnemann, Autonomous Systems Lab, ETH Zürich.
+GPL version 3 or (at your option) any later version. See COPYING and preserved source headers.
+
+Boost 1.90.0: Boost Software License 1.0, see LICENSE_1_0.txt.
+Clipper2 1.5.2: Boost Software License 1.0, see CLIPPER2-LICENSE.txt (source: third-party/clipper2/LICENSE).
+No Qt wrapper or Qt runtime is included in this planner.

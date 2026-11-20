@@ -35,3 +35,9 @@
 22. [当前架构梳理与优化建议](22-architecture-assessment.md)
 
 23. [当前范围集成审查与验收](23-integration-review.md)
+
+历史过程记录已归档：[任务历史](history/06-task-history.md)、[进度历史](history/07-progress-history.md)。当前状态以06/07及用户最新确认优先。
+
+24. [大田地块规划本地闭环实施计划](24-field-planning-implementation.md)
+
+25. [M3单地块本地规划增量Review](25-review-m3-field-planner.md)

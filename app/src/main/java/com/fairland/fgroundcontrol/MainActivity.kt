@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                                 .semantics { liveRegion = LiveRegionMode.Polite },
                             color = AppColors.toast, shape = RoundedCornerShape(AppRadius.alternative)
                         ) {
-                            Text(stringResource(R.string.startup_unsupported), color = AppColors.textInverse,
+                            Text(stringResource(R.string.startup_unsupported), color = AppColors.textInverse, style = com.fairland.fgroundcontrol.ui.theme.AppType.toast,
                                 modifier = Modifier.padding(horizontal = AppSpace.lg, vertical = AppSpace.sm))
                         }
                     }

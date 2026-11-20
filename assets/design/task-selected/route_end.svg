@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="38" viewBox="0 0 24 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="TaskEndPoint">
+<g id="Ellipse 9">
+<ellipse cx="12" cy="26" rx="12" ry="12" fill="white"/>
+<mask id="stroke0_0_519" fill="white">
+<path d="M24 26C24 32.6274 18.6274 38 12 38C5.37258 38 0 32.6274 0 26C0 19.3726 5.37258 14 12 14C18.6274 14 24 19.3726 24 26Z"/>
+</mask>
+<ellipse cx="12" cy="26" rx="12" ry="12" stroke-width="6" stroke="#00E676" mask="url(#stroke0_0_519)"/>
+</g>
+<path id="Vector 2510" d="M12 7L12 15" stroke-width="8" stroke="#00E676" stroke-opacity="0.4"/>
+<path id="Vector 10 (Stroke)" d="M11.316 11.7315C11.6026 12.0799 12.1324 12.0911 12.4324 11.7542L21.8124 1.21477C22.2703 0.700045 21.8236 -0.0745602 21.1858 0.00578499L21.0562 0.0328093L12.0394 2.74804C11.9207 2.78375 11.7972 2.78943 11.6763 2.76226C9.20373 2.20678 5.51154 1.05047 2.98556 0.224824L2.85171 0.19211C2.19384 0.0983706 1.71318 0.92273 2.19666 1.44661C4.62208 4.07467 8.7051 8.55708 11.316 11.7315Z" fill="#00E676"/>
+</g>
+</svg>

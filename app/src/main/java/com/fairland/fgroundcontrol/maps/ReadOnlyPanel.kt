@@ -91,7 +91,7 @@ fun MapHomeScreen(model: FoundationViewModel, modifier: Modifier = Modifier, onS
     BoxWithConstraints(modifier) {
         val density = androidx.compose.ui.platform.LocalDensity.current
         val compassTop = with(density) { (AppLayout.flightBarHeight * AppLayout.scale(maxWidth,maxHeight) * fontScale.coerceAtLeast(1f) + AppSpace.xs).roundToPx() } + WindowInsets.displayCutout.getTop(density)
-        VehicleMap(config, readout, model, Modifier.fillMaxSize(), locateRequest, compassTop)
+        VehicleMap(config, readout, model, Modifier.fillMaxSize(), locateRequest, compassTop, editingBoundary)
         com.fairland.fgroundcontrol.ui.TopStatusBar(readout, connection, preset.id == "sitl", config,
             onFollow = model::followMap, onLocate = { locateRequest++ }, onSettings = onSettings, onTaskMode = onTaskMode, unsupported = unsupported, selectedMode = selectedMode,
             modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter))
@@ -101,16 +101,19 @@ fun MapHomeScreen(model: FoundationViewModel, modifier: Modifier = Modifier, onS
 }
 
 @Composable
-private fun VehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, modifier: Modifier, locateRequest: Int = 0, compassTop: Int = 0) {
+private fun VehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, modifier: Modifier, locateRequest: Int = 0, compassTop: Int = 0, editingBoundary: Boolean = false) {
     val camera = remember { mutableStateOf<CameraPosition?>(null) }
     // 视图与样式代际绑定，原生异步失败回调不能归属到新地图源。
-    key(config.revision) { RevisionVehicleMap(config, readout, model, camera, modifier, locateRequest, compassTop) }
+    key(config.revision) { RevisionVehicleMap(config, readout, model, camera, modifier, locateRequest, compassTop, editingBoundary) }
 }
 
 @Composable
 @android.annotation.SuppressLint("ClickableViewAccessibility")
-private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, camera: MutableState<CameraPosition?>, modifier: Modifier, locateRequest: Int, compassTop: Int) {
+private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model: FoundationViewModel, camera: MutableState<CameraPosition?>, modifier: Modifier, locateRequest: Int, compassTop: Int, editingBoundary: Boolean) {
     val boundaryState by model.boundary.state.collectAsStateWithLifecycle()
+    val selectedTask by model.boundary.selectedTask.collectAsStateWithLifecycle()
+    val tasks by model.boundary.tasks.collectAsStateWithLifecycle()
+    LaunchedEffect(model.boundary) { model.boundary.loadTaskPreviews() }
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     val presenter = remember(context) { MapPresenter(model, locateRequest) }
@@ -153,7 +156,12 @@ private fun RevisionVehicleMap(config: MapConfiguration, readout: Readout, model
         }
     }
     AndroidView(factory = { view }, modifier = modifier, update = {
-        presenter.drawBoundary(boundaryState.draft?.points.orEmpty())
+        presenter.editingBoundary = editingBoundary
+        presenter.drawTaskBoundaries(if(editingBoundary) emptyList() else tasks.filter { it.id != selectedTask?.id })
+        presenter.drawBoundary((if(editingBoundary) boundaryState.draft else selectedTask?.draft)?.points.orEmpty())
+        presenter.drawPlan((if(editingBoundary) boundaryState.draft else selectedTask?.draft)?.plan?.points.orEmpty())
+        presenter.drawRouteEnds(if(editingBoundary) emptyList() else selectedTask?.draft?.plan?.points.orEmpty())
+        presenter.drawSelection(if(editingBoundary) null else selectedTask?.draft?.name,if(editingBoundary) emptyList() else selectedTask?.draft?.points.orEmpty())
         presenter.updateCompassTop(compassTop)
         presenter.update(config, readout, locateRequest)
     })
@@ -174,6 +182,31 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
     private var locateRequest = initialLocateRequest
     private var handledLocateRequest = initialLocateRequest
     private val empty = "{\"type\":\"FeatureCollection\",\"features\":[]}"
+    var editingBoundary = false
+    private var taskBoundaries = emptyList<com.fairland.fgroundcontrol.mission.SavedFieldTask>()
+    private var taskBoundarySource: GeoJsonSource? = null
+    fun drawTaskBoundaries(boundaries: List<com.fairland.fgroundcontrol.mission.SavedFieldTask>) {
+        val unchanged = taskBoundaries == boundaries
+        taskBoundaries = boundaries
+        val source = map?.style?.getSourceAs<GeoJsonSource>("task-boundaries") ?: return
+        if (unchanged && taskBoundarySource === source) return
+        taskBoundarySource = source
+        val style=map?.style ?: return
+        taskLabelImages.forEach { style.removeImage(it) }
+        taskLabelImages.clear()
+        val features = boundaries.filter { it.draft.points.size >= 3 }.mapIndexed { index, task ->
+            val points=task.draft.points
+            val ring = (points + points.first()).joinToString(",") { "[${it.longitude},${it.latitude}]" }
+            val image="task-unselected-$index"
+            style.addImage(image,createTaskLabel(task.draft.name.orEmpty(),R.drawable.task_unselected_check))
+            taskLabelImages.add(image)
+            val (latitude,longitude)=com.fairland.fgroundcontrol.mission.taskLabelCenter(points)
+            "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[$ring]]}}," +
+                "{\"type\":\"Feature\",\"properties\":{\"image\":\"$image\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[$longitude,$latitude]}}"
+        }
+        source.setGeoJson("{\"type\":\"FeatureCollection\",\"features\":[${features.joinToString(",")}]}")
+    }
+    private val taskLabelImages=mutableListOf<String>()
     private var boundaryPoints = emptyList<com.fairland.fgroundcontrol.mission.BoundaryPoint>()
     private var boundarySource: GeoJsonSource? = null
     fun drawBoundary(points: List<com.fairland.fgroundcontrol.mission.BoundaryPoint>) {
@@ -189,6 +222,133 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
         }
         source.setGeoJson("{\"type\":\"FeatureCollection\",\"features\":[${features.joinToString(",")}]}")
     }
+    private var labelStyle: Style? = null
+    private var labelName: String? = null
+    private var selectionName: String? = null
+    private var selectionPoints = emptyList<com.fairland.fgroundcontrol.mission.BoundaryPoint>()
+    fun drawSelection(name: String?,points: List<com.fairland.fgroundcontrol.mission.BoundaryPoint>) {
+        selectionName=name;selectionPoints=points
+        val style=map?.style ?: return
+        val active=name!=null && points.isNotEmpty()
+        style.getLayerAs<LineLayer>("boundary-line")?.setProperties(lineColor((if(active) AppColors.taskSelectedMap else AppColors.textInverse).toArgb()),lineWidth(if(active) AppLayout.taskMapBorderWidth else AppLayout.mapTrackWidth))
+        style.getLayerAs<org.maplibre.android.style.layers.CircleLayer>("boundary-points")?.setProperties(
+            org.maplibre.android.style.layers.PropertyFactory.circleColor((if(active) AppColors.taskSelectedMap else AppColors.boundaryPoint).toArgb()),
+            org.maplibre.android.style.layers.PropertyFactory.circleRadius(if(active) AppLayout.mapSelectedPointRadius else AppLayout.boundaryPointRadius),
+            org.maplibre.android.style.layers.PropertyFactory.circleStrokeWidth(if(active) 0f else AppLayout.boundaryPointStroke))
+        style.getSourceAs<GeoJsonSource>("task-selected-fill")?.setGeoJson(
+            if(active && points.size>=3) {
+                val ring=(points+points.first()).joinToString(",") { "[${it.longitude},${it.latitude}]" }
+                "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[$ring]]}}]}"
+            } else empty)
+        val source=style.getSourceAs<GeoJsonSource>("task-selection") ?: return
+        if(!active) {source.setGeoJson(empty);return}
+        // 栅格底图没有glyphs服务；动态名称用项目字体本地绘制，不依赖在线字形。
+        if(labelStyle!==style || labelName!=name) {
+            style.addImage("task-selected-label",createTaskLabel(name.orEmpty(),R.drawable.task_selected_check))
+            labelStyle=style;labelName=name
+        }
+        val (latitude,longitude)=com.fairland.fgroundcontrol.mission.taskLabelCenter(points)
+        source.setGeoJson("""{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":${org.json.JSONObject.quote(name)}},"geometry":{"type":"Point","coordinates":[$longitude,$latitude]}}]}""")
+    }
+    private fun createTaskLabel(name: String, indicator: Int): Bitmap {
+            val paint=Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                textSize=AppLayout.mapSelectedLabelSize/AppLayout.mapSelectedIconScale
+                typeface=androidx.core.content.res.ResourcesCompat.getFont(model.getApplication<android.app.Application>(),R.font.noto_sans_sc)
+            }
+            val text=android.text.TextUtils.ellipsize(name.replace('\n',' ').replace('\r',' '),android.text.TextPaint(paint),AppLayout.mapSelectedLabelMaxWidth/AppLayout.mapSelectedIconScale,android.text.TextUtils.TruncateAt.END).toString()
+            val padding=AppLayout.mapSelectedLabelPadding/AppLayout.mapSelectedIconScale
+            val bounds=android.graphics.Rect()
+            paint.getTextBounds(text,0,text.length,bounds)
+            val textHeight=bounds.height().toFloat()
+            val gap=AppLayout.mapTaskLabelGap/AppLayout.mapSelectedIconScale
+            val checkSize=AppLayout.mapSelectedCheckSize/AppLayout.mapSelectedIconScale
+            val width=kotlin.math.ceil(kotlin.math.max(paint.measureText(text)+padding*2,checkSize.toDouble().toFloat())).toInt()
+            val height=kotlin.math.ceil(textHeight+padding*2+gap+checkSize).toInt()
+            val bitmap=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
+            val canvas=Canvas(bitmap)
+            val x=(width-paint.measureText(text))/2
+            val baseline=padding-bounds.top
+            paint.style=Paint.Style.STROKE;paint.strokeWidth=padding;paint.color=AppColors.dashboardPanel.toArgb();canvas.drawText(text,x,baseline,paint)
+            paint.style=Paint.Style.FILL;paint.color=AppColors.textInverse.toArgb();canvas.drawText(text,x,baseline,paint)
+            val check=android.graphics.BitmapFactory.decodeResource(model.getApplication<android.app.Application>().resources,indicator)
+            canvas.drawBitmap(check,null,android.graphics.RectF((width-checkSize)/2,height-checkSize,(width+checkSize)/2,height.toFloat()),null)
+            return bitmap
+    }
+    private var endpointPoints=emptyList<com.fairland.fgroundcontrol.mission.BoundaryPoint>()
+    private var endpointSource: GeoJsonSource?=null
+    fun drawRouteEnds(points: List<com.fairland.fgroundcontrol.mission.BoundaryPoint>) {
+        val unchanged=endpointPoints==points
+        endpointPoints=points
+        val source=map?.style?.getSourceAs<GeoJsonSource>("route-ends") ?: return
+        if(unchanged && endpointSource===source) return
+        endpointSource=source
+        if(points.size<2) {source.setGeoJson(empty);return}
+        val features=listOf(true,false).mapNotNull { start ->
+            val rotation=com.fairland.fgroundcontrol.mission.routeEndpointRotation(points,start) ?: return@mapNotNull null
+            val icon=if(start) "route-start" else "route-end"
+            val p=if(start) points.first() else points.last()
+            "{\"type\":\"Feature\",\"properties\":{\"icon\":\"$icon\",\"letter\":\"$icon-letter\",\"rotation\":$rotation},\"geometry\":{\"type\":\"Point\",\"coordinates\":[${p.longitude},${p.latitude}]}}"
+        }
+        source.setGeoJson("{\"type\":\"FeatureCollection\",\"features\":[${features.joinToString(",")}]}")
+    }
+    private fun routeMarker(start: Boolean, letterOnly: Boolean = false): Bitmap {
+        val scale=AppLayout.mapSelectedIconScale
+        val size=AppLayout.routeMarkerCanvas/scale
+        val center=size/2
+        val bitmap=Bitmap.createBitmap(size.toInt(),size.toInt(),Bitmap.Config.ARGB_8888)
+        val canvas=Canvas(bitmap)
+        val resources=model.getApplication<android.app.Application>().resources
+        val icon=android.graphics.BitmapFactory.decodeResource(resources,if(start) R.drawable.task_route_start else R.drawable.task_route_end)
+        val left=center-(if(start) AppLayout.routeStartCenter else AppLayout.routeEndCenter)/scale
+        val top=center-AppLayout.routeMarkerHeight/scale/2
+        if(!letterOnly) {
+        if(start) canvas.drawBitmap(icon,null,android.graphics.RectF(left,top,left+AppLayout.routeMarkerWidth/scale,top+AppLayout.routeMarkerHeight/scale),null)
+        else {
+            // 终点原SVG为竖向24×38，旋转呈现，不拉伸成横向。
+            canvas.save()
+            canvas.translate(left+AppLayout.routeMarkerWidth/scale/2,top+AppLayout.routeMarkerHeight/scale/2)
+            canvas.rotate(AppLayout.routeEndRotation)
+            canvas.drawBitmap(icon,null,android.graphics.RectF(-AppLayout.routeMarkerHeight/scale/2,-AppLayout.routeMarkerWidth/scale/2,AppLayout.routeMarkerHeight/scale/2,AppLayout.routeMarkerWidth/scale/2),null)
+            canvas.restore()
+        }
+        }
+        if(letterOnly) {
+        val paint=Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize=AppLayout.routeMarkerText/scale
+            val font=androidx.core.content.res.ResourcesCompat.getFont(model.getApplication(),R.font.noto_sans_sc)
+            typeface=android.graphics.Typeface.create(font,AppLayout.routeMarkerTextWeight,false)
+            style=Paint.Style.FILL_AND_STROKE
+            strokeWidth=AppLayout.routeMarkerTextStroke/scale
+            color=(if(start) AppColors.planningRoute else AppColors.routeEnd).toArgb()
+            textAlign=Paint.Align.CENTER
+        }
+        val letter=if(start) "S" else "E"
+        val bounds=android.graphics.Rect()
+        paint.getTextBounds(letter,0,letter.length,bounds)
+        // 字形四角也留在圆环内，避免粗笔画与同色圆环相接而看起来缺失。
+        val diagonal=kotlin.math.hypot(bounds.width().toDouble(),bounds.height().toDouble()).toFloat()
+        val available=AppLayout.routeMarkerTextSafeDiameter/scale-paint.strokeWidth
+        if(diagonal>available) {
+            paint.textSize*=available/diagonal
+            paint.getTextBounds(letter,0,letter.length,bounds)
+        }
+        paint.textAlign=Paint.Align.LEFT
+        canvas.drawText(letter,center-bounds.exactCenterX(),center-bounds.exactCenterY(),paint)
+        }
+        return bitmap
+    }
+    private var planPoints = emptyList<com.fairland.fgroundcontrol.mission.BoundaryPoint>()
+    private var planSource: GeoJsonSource? = null
+    fun drawPlan(points: List<com.fairland.fgroundcontrol.mission.BoundaryPoint>) {
+        val unchanged = planPoints == points
+        planPoints = points
+        val source = map?.style?.getSourceAs<GeoJsonSource>("field-plan") ?: return
+        if (unchanged && planSource === source) return
+        planSource = source
+        if (points.size < 2) { source.setGeoJson(empty); return }
+        val coordinates = points.joinToString(",") { "[${it.longitude},${it.latitude}]" }
+        source.setGeoJson("""{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"LineString","coordinates":[$coordinates]}}]}""")
+    }
     fun cameraPosition(): CameraPosition? = map?.cameraPosition
     private var compassTop = 0
     fun updateCompassTop(top: Int) {
@@ -197,6 +357,16 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
         if (settings.compassMarginTop != top) settings.setCompassMargins(settings.compassMarginLeft, top, settings.compassMarginRight, settings.compassMarginBottom)
     }
     fun attach(map: MapLibreMap) {
+        map.addOnMapClickListener { point ->
+            if (editingBoundary) false else {
+                val hit = model.boundary.tasks.value.asReversed().firstOrNull {
+                    com.fairland.fgroundcontrol.mission.containsTaskPoint(it.draft.points, point.latitude, point.longitude)
+                }
+                if (hit != null) model.boundary.selectTask(hit)
+                hit != null
+            }
+        }
+
         if (destroyed) return
         this.map = map
         updateCompassTop(compassTop)
@@ -226,10 +396,47 @@ private class MapPresenter(private val model: FoundationViewModel, initialLocate
                 else Style.Builder().fromJson(config.style ?: "{\"version\":8,\"sources\":{},\"layers\":[{\"id\":\"background\",\"type\":\"background\",\"paint\":{\"background-color\":\"${String.format(Locale.ROOT, "#%06x", AppColors.mapBackground.toArgb() and 0xffffff)}\"}}]}")
             map.setStyle(builder) { style ->
                 if (destroyed || token != styleToken) return@setStyle
+                style.addSource(GeoJsonSource("task-boundaries", empty))
+                style.addLayer(LineLayer("task-boundaries-line", "task-boundaries").withProperties(lineColor(AppColors.textInverse.toArgb()),lineWidth(AppLayout.taskMapBorderWidth)))
+                style.addLayerBelow(org.maplibre.android.style.layers.FillLayer("task-boundaries-fill","task-boundaries").withProperties(
+                    org.maplibre.android.style.layers.PropertyFactory.fillColor(AppColors.taskMapFill.toArgb()),
+                    org.maplibre.android.style.layers.PropertyFactory.fillOpacity(AppColors.taskMapFillOpacity)),"task-boundaries-line")
+                style.addLayer(SymbolLayer("task-boundaries-label","task-boundaries").apply { minZoom=AppLayout.mapTaskLabelMinZoom }.withProperties(
+                    iconImage(org.maplibre.android.style.expressions.Expression.get("image")),
+                    org.maplibre.android.style.layers.PropertyFactory.iconSize(AppLayout.mapSelectedIconScale),
+                    org.maplibre.android.style.layers.PropertyFactory.iconAnchor("center"),
+                    iconAllowOverlap(true),iconIgnorePlacement(true)))
+                drawTaskBoundaries(taskBoundaries)
                 style.addSource(GeoJsonSource("boundary-draft", empty))
                 style.addLayer(LineLayer("boundary-line", "boundary-draft").withProperties(lineColor(AppColors.textInverse.toArgb()),lineWidth(AppLayout.mapTrackWidth)))
+                style.addSource(GeoJsonSource("task-selected-fill",empty))
+                style.addLayerBelow(org.maplibre.android.style.layers.FillLayer("task-selected-fill-layer","task-selected-fill").withProperties(
+                    org.maplibre.android.style.layers.PropertyFactory.fillColor(AppColors.taskSelectedMap.toArgb()),
+                    org.maplibre.android.style.layers.PropertyFactory.fillOpacity(AppColors.taskSelectedFillOpacity)),"boundary-line")
                 style.addLayer(org.maplibre.android.style.layers.CircleLayer("boundary-points", "boundary-draft").withProperties(org.maplibre.android.style.layers.PropertyFactory.circleColor(AppColors.boundaryPoint.toArgb()), org.maplibre.android.style.layers.PropertyFactory.circleRadius(AppLayout.boundaryPointRadius), org.maplibre.android.style.layers.PropertyFactory.circleStrokeColor(AppColors.textInverse.toArgb()),org.maplibre.android.style.layers.PropertyFactory.circleStrokeWidth(AppLayout.boundaryPointStroke)))
                 drawBoundary(boundaryPoints)
+                style.addSource(GeoJsonSource("field-plan", empty))
+                style.addLayer(LineLayer("field-plan-line", "field-plan").withProperties(lineColor(AppColors.planningRoute.toArgb()),lineWidth(AppLayout.mapTrackWidth)))
+                drawPlan(planPoints)
+                style.addSource(GeoJsonSource("task-selection",empty))
+                style.addLayer(SymbolLayer("task-selection-label","task-selection").apply { minZoom=AppLayout.mapTaskLabelMinZoom }.withProperties(
+                    iconImage("task-selected-label"),org.maplibre.android.style.layers.PropertyFactory.iconSize(AppLayout.mapSelectedIconScale),
+                    org.maplibre.android.style.layers.PropertyFactory.iconAnchor("center"),
+                    iconAllowOverlap(true),iconIgnorePlacement(true)))
+                drawSelection(selectionName,selectionPoints)
+                style.addImage("route-start",routeMarker(true))
+                style.addImage("route-end",routeMarker(false))
+                style.addImage("route-start-letter",routeMarker(true,true))
+                style.addImage("route-end-letter",routeMarker(false,true))
+                style.addSource(GeoJsonSource("route-ends",empty))
+                style.addLayer(SymbolLayer("route-ends-label","route-ends").withProperties(
+                    iconImage(Expression.get("icon")),org.maplibre.android.style.layers.PropertyFactory.iconSize(AppLayout.mapSelectedIconScale*AppLayout.routeMarkerScale),
+                    iconRotate(Expression.get("rotation")),iconRotationAlignment("map"),
+                    iconAllowOverlap(true),iconIgnorePlacement(true)))
+                style.addLayer(SymbolLayer("route-ends-letters","route-ends").withProperties(
+                    iconImage(Expression.get("letter")),org.maplibre.android.style.layers.PropertyFactory.iconSize(AppLayout.mapSelectedIconScale*AppLayout.routeMarkerScale),
+                    iconRotationAlignment("viewport"),iconAllowOverlap(true),iconIgnorePlacement(true)))
+                drawRouteEnds(endpointPoints)
                 style.addSource(GeoJsonSource("vehicle", empty)); style.addSource(GeoJsonSource("track", empty))
                 style.addLayer(LineLayer("track", "track").withProperties(lineColor(AppColors.mapTrack.toArgb()), lineWidth(AppLayout.mapTrackWidth)))
                 val icon = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)

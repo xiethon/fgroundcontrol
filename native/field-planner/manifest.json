@@ -1,0 +1,203 @@
+{
+  "referenceCommit": "a73f9c6312a5904fe606cecd9850fec3870bd532",
+  "clipperVersion": "Clipper2_1.5.2",
+  "files": [
+    {
+      "file": "native/field-planner/reference/geometry.hpp",
+      "source": "src/core/mission/planner/geometry.hpp",
+      "sha256": "c5da9848cb55bd9773078e5ddb273ffb6596cc54bc2ea7a867e0c93d1b491cb5"
+    },
+    {
+      "file": "native/field-planner/reference/geometry.cc",
+      "source": "src/core/mission/planner/geometry.cc",
+      "sha256": "6079cf4265141e9ce77ff984aa07a75b83a6b1e1a216ef4f5744108bdee1e5c0"
+    },
+    {
+      "file": "native/field-planner/reference/field/algorithm.hpp",
+      "source": "src/core/mission/planner/field/algorithm.hpp",
+      "sha256": "4105c993d2f03a766f705a58fc88e78dde4a58826bbbb155c4fd6f54958fca39"
+    },
+    {
+      "file": "native/field-planner/reference/field/algorithm.cc",
+      "source": "src/core/mission/planner/field/algorithm.cc",
+      "sha256": "df59acf437dba93c7e64f0010115630620c52a4ad30a9ef870b0939716641a5c"
+    },
+    {
+      "file": "native/field-planner/reference/field/types.hpp",
+      "source": "src/core/mission/planner/field/types.hpp",
+      "sha256": "c2540fe54b89fce032751469fc417553f565c478372fcdb5c6f57c0c20cb094f"
+    },
+    {
+      "file": "native/field-planner/reference/field/planner_path_search.hpp",
+      "source": "src/core/mission/planner/field/planner_path_search.hpp",
+      "sha256": "374d95debe3f6367b8e78f8674c77dc3fd59e6560657ed7764b8bff4732838cf"
+    },
+    {
+      "file": "native/field-planner/reference/field/planner_path_search.cc",
+      "source": "src/core/mission/planner/field/planner_path_search.cc",
+      "sha256": "7dcc7da9d85dab760d52871c3c88766956c907195006256bc7846396ffa1ac6a"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/merge_plots.h",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/merge_plots.h",
+      "sha256": "7c4457bcaae5a02631e96a59f1238cd182c954c3e0850f9bfe986629e1609c81"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/utils.h",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/utils.h",
+      "sha256": "197fc9af748ce748a0eac56ce25d9c856b1da5485984924e5aec828df8d899a0"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/bcd.h",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/bcd.h",
+      "sha256": "d05fd6b7e48fae3e9f2919bd7e8ad6ea56fa0cbaed4528543a6714a2126987ae"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/sweep.h",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/sweep.h",
+      "sha256": "84f00b79c1767036ac8ae667c54357ec4e5258fceecbe476882d2db1b8246f41"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/decomposition.h",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/decomposition.h",
+      "sha256": "4954952395987db21f286dc86858ce1a4ab3e652ea30c13c142016bde876814d"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/geo_types.h",
+      "source": "src/core/mission/planner/field/ccpp/geo/geo_types.h",
+      "sha256": "dc9886a9739335736a05e110e621430825c996f2cc5ab5d77157750691c917d7"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/visibility_polygon.h",
+      "source": "src/core/mission/planner/field/ccpp/geo/visibility_polygon.h",
+      "sha256": "b08527653964ec8aa398041d09d80e9c6f25e2044db0c2787def280ffc962a92"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/weakly_monotone.h",
+      "source": "src/core/mission/planner/field/ccpp/geo/weakly_monotone.h",
+      "sha256": "5b3aff38ae64dbaec401a09a020cd81691e0dcc2350f67b293bd8b636a77b4a7"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/converter.h",
+      "source": "src/core/mission/planner/field/ccpp/geo/converter.h",
+      "sha256": "72f5a48e4a7a429fe8b8e167137d3a76dea9362c6adc33fff59bed9e12bff25d"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/visibility_graph.h",
+      "source": "src/core/mission/planner/field/ccpp/geo/visibility_graph.h",
+      "sha256": "10990ca95f3483cbaa812a9bc8ea066039cce1450c377545d2d7ca200e9318ce"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/geo_comm.h",
+      "source": "src/core/mission/planner/field/ccpp/geo/geo_comm.h",
+      "sha256": "05af04ac2a56c64f657c6536bc51c0edd67190ad2074a9853e4f720656a425fa"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/graph_base.h",
+      "source": "src/core/mission/planner/field/ccpp/geo/graph_base.h",
+      "sha256": "5b0a5d5e852a59d956a5b5bea1a9f51c8cb0e4331d80f50bc0d5e4b1deb17e18"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/graph_base_impl.h",
+      "source": "src/core/mission/planner/field/ccpp/geo/graph_base_impl.h",
+      "sha256": "77f11851e916cec38bdd8966dccdbb5c8d632bac8e92727a25343f20425cc019"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/coverage_planner.hpp",
+      "source": "src/core/mission/planner/field/ccpp/coverage_planner.hpp",
+      "sha256": "0e603872c270df457e13ede6b9c2ab2ea0e3f3d5f587f0db0c039a7ede43c13c"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/coverage_planner.cc",
+      "source": "src/core/mission/planner/field/ccpp/coverage_planner.cc",
+      "sha256": "979c1178549a1d0e9125b80cc0470e6bfbbb8a30663a3753b53f375a0699cab7"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/bcd.cc",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/bcd.cc",
+      "sha256": "44ea3e880cb827103d01d49afc8b38fa980e86357a4e28e05dacf6db2e51c1a4"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/utils.cc",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/utils.cc",
+      "sha256": "dc806846e19d76eda9db45df535d5913be4b8920fa9d5757e3008c7bed848e10"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/sweep.cc",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/sweep.cc",
+      "sha256": "c391831b24e79bacb93eca01d4a173f48d4e69b2a198dedb46522583679cac89"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/decomposition.cc",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/decomposition.cc",
+      "sha256": "cb642b84e76ec2cd10930e2c153697312abeeeb1bfb555cffa9eb40646c3b66c"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/path_planner/merge_plots.cc",
+      "source": "src/core/mission/planner/field/ccpp/path_planner/merge_plots.cc",
+      "sha256": "5dbae40eca456203fe584afdb6f27d074b4ec675bb1c635c2a840c8f7dff7b52"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/visibility_polygon.cc",
+      "source": "src/core/mission/planner/field/ccpp/geo/visibility_polygon.cc",
+      "sha256": "22277188a5e6e72345b0f42750336ed73830482fc254ed0bea71e96cf0a577fd"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/weakly_monotone.cc",
+      "source": "src/core/mission/planner/field/ccpp/geo/weakly_monotone.cc",
+      "sha256": "4e36e2277a40bd9ac307456a47daf344753e148fece3c626e25f05c115652cfc"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/visibility_graph.cc",
+      "source": "src/core/mission/planner/field/ccpp/geo/visibility_graph.cc",
+      "sha256": "d5fe19ed826cd759183bd821d65069391a1731e5b9cd13601709433800ea8e17"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/geo_types.cc",
+      "source": "src/core/mission/planner/field/ccpp/geo/geo_types.cc",
+      "sha256": "06fa419ee8d4f598110629cb79984c87cad60f73a8f6f7d448b87fab95c0b5ac"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/converter.cc",
+      "source": "src/core/mission/planner/field/ccpp/geo/converter.cc",
+      "sha256": "3a0012acb2df67e19b8c1e6355906ed27af43c6d78822b082769e20e6ff115a0"
+    },
+    {
+      "file": "native/field-planner/reference/field/ccpp/geo/geo_comm.cc",
+      "source": "src/core/mission/planner/field/ccpp/geo/geo_comm.cc",
+      "sha256": "e8ff46f035ae2fea08e99f4a26e2361c9d3e298c4df758df2c668d65525e50c5"
+    }
+  ],
+  "boost": {
+    "version": "1.90.0",
+    "archiveSha256": "4b213ed726fa25d25c70df464743bea30bc97788d71822cedc008dd37f59183d",
+    "origin": "Homebrew installed Boost headers; Boost Software License 1.0"
+  },
+  "localPatches": [
+    {
+      "file": "reference/field/ccpp/geo/geo_types.h",
+      "reason": "Preserve directed horizontal/vertical line orientation for BCD edge ordering",
+      "sha256": "260a7f098c4e311f0fe8751cdb418b633c0538bcca350a68a9b7555ec2515be1"
+    },
+    {
+      "file": "reference/field/ccpp/geo/geo_types.cc",
+      "reason": "Preserve near-horizontal ray parity; reject disconnected offset instead of dropping regions",
+      "sha256": "4681c53a0d048687d19344e73a8941208e69661562d4b1be3cff1258d55eabcd"
+    },
+    {
+      "file": "reference/field/ccpp/path_planner/bcd.cc",
+      "reason": "Sample vertical event midpoint and reject invalid IN cell before iterator dereference",
+      "sha256": "a5e7fa3d20ac4f0e97abaf1e0aff8a087b8b6bfa56ca2b2429a9471b8aed40fe"
+    },
+    {
+      "file": "reference/field/ccpp/path_planner/utils.cc",
+      "reason": "Handle empty decomposition without unsigned underflow or back() access",
+      "sha256": "3bd398f7edc052ecc64bb3963b895a61771be8892f68a0df113b2f0c2ca59085"
+    },
+    {
+      "file": "reference/field/ccpp/coverage_planner.cc",
+      "reason": "Reject empty or incomplete decomposition, empty cell sweeps and incomplete coverage",
+      "sha256": "a8a8f5241f10c698b62a03c6a617cd1cfacfd455a818f35cc9a85bafc51313b7"
+    }
+  ]
+}

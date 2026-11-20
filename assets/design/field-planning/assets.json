@@ -1,0 +1,89 @@
+{
+  "fileKey": "ktOZrqqgi1O4DQlVo4k64X",
+  "screenNode": "3909:32939",
+  "panelNode": "3909:32999",
+  "assets": [
+    {
+      "node": "121:278",
+      "source": "assets/design/field-planning/minus.svg",
+      "runtime": "app/src/main/res/drawable/planning_minus.xml",
+      "sourceSha256": "fed277eb9e5a164b372c61dcf164fb26718e5857ab7efe0862e3d5e86031d579",
+      "runtimeSha256": "4921e5d13e9a707f0b61ffd3b1bc2252318da878459845099428b976fc38e599",
+      "dimensions": "40x40",
+      "conversion": "Exact SVG path/fill to Android VectorDrawable; no path edits"
+    },
+    {
+      "node": "121:280",
+      "source": "assets/design/field-planning/plus.svg",
+      "runtime": "app/src/main/res/drawable/planning_plus.xml",
+      "sourceSha256": "dffa7c8d908d027767ff4c4b82f5bae251a299305d49f06466a56f062eb83e03",
+      "runtimeSha256": "3c0af4da71ddd359aa01c969bd3013de97039c3c4c3661a3f5f407b688205f8d",
+      "dimensions": "40x40",
+      "conversion": "Exact SVG path/fill to Android VectorDrawable; no path edits"
+    },
+    {
+      "node": "I3909:33000;1190:11951",
+      "source": "assets/design/field-planning/drawer-toggle.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/planning_drawer_toggle.png",
+      "sourceSha256": "836659228a0aef94e0bbf29866e3c136e45fef5abfd92cbb306ac926d3899267",
+      "runtimeSha256": "e471d70b8f7f9dc5810deed89bc401b7e24a6db3fc7771f7e1f3f1a4e86ddd5f",
+      "dimensions": "40x40",
+      "conversion": "rsvg-convert at 2x; paths/filters preserved; CSS fill fallback resolved"
+    },
+    {
+      "node": "I3909:32999;167:10467;121:253;168:10671",
+      "source": "assets/design/field-planning/arrow-right.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/planning_arrow_right.png",
+      "sourceSha256": "b297f2a62595d33a4fbb7aef5eef7a4250ff70272f7603f6ce94beddf324fb02",
+      "runtimeSha256": "092b85f3306e620af6e193fbea52b03f32580d982beed23113f9644bd6a06c3c",
+      "dimensions": "24x24",
+      "conversion": "rsvg-convert at 2x; paths/filters preserved; CSS fill fallback resolved"
+    },
+    {
+      "node": "I3909:33000;975:25199",
+      "source": "assets/design/field-planning/drawer-corner.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/planning_drawer_corner.png",
+      "sourceSha256": "44b0c4d453b19803550fba093120fa93f4d1c8f80d31c3553e572f68ba2d06cb",
+      "runtimeSha256": "fd925d0b3d2f8bcb831f604a28172db12b70c74416df0976e8647b2a497b7969",
+      "dimensions": "16x16",
+      "conversion": "rsvg-convert at 2x; paths/filters preserved; CSS fill fallback resolved"
+    },
+    {
+      "node": "192:4092",
+      "source": "assets/design/field-planning/tab-corner.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/planning_tab_corner.png",
+      "sourceSha256": "0da621dadea32e6e6676d4a27b6b4abc0554a0b64fed1f017c5820b027f25816",
+      "runtimeSha256": "01fc0d774c7b2aeff20f5b815e6e577114358c73b2e093e106e305e74b8178f1",
+      "dimensions": "16x16",
+      "conversion": "rsvg-convert at 2x; paths/filters preserved; CSS fill fallback resolved"
+    },
+    {
+      "source": "assets/design/field-planning/reference-search.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_search.png",
+      "referenceSource": "assets/icons/pages/flight/search.svg",
+      "qrcAlias": "icons/pages/search.svg",
+      "referenceCommit": "a73f9c6312a5904fe606cecd9850fec3870bd532",
+      "sourceSha256": "e905537f47f0b0471bb18f81108e1fc45c695dbb985d8598c2036105fbf5524d",
+      "runtimeSha256": "e938014c3efb157cb1283d5105c4976c98e81f149c91d4ef062dccb12da39f3b",
+      "conversion": "rsvg-convert at 2x; original SVG paths preserved",
+      "dimensions": "32x32",
+      "renderDimensions": "64x64"
+    },
+    {
+      "source": "assets/design/field-planning/reference-field-mission.svg",
+      "runtime": "app/src/main/res/drawable-nodpi/task_type_field.png",
+      "referenceSource": "assets/icons/pages/mission/field_mission.svg",
+      "qrcAlias": "icons/pages/field_mission.svg",
+      "referenceCommit": "a73f9c6312a5904fe606cecd9850fec3870bd532",
+      "sourceSha256": "a1d1c7eb60e85b5a3722677f98de510fe9a783a7accb1ebf5258ec55115a7647",
+      "runtimeSha256": "503d1dd9a8a6f6c5c812d35217dae1f16f2b309a8ec837ff1690355b6cbeba7a",
+      "renderDimensions": "64x64",
+      "conversion": "rsvg-convert; source paths preserved",
+      "sourceDimensions": {
+        "width": "24",
+        "height": "24",
+        "viewBox": "0 0 24 24"
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # 架构设计
 
-当前实现为单app模块、按包分层；任务/规划/上传/执行/恢复章节仍是后续目标，不代表已实现。
+当前实现为单app模块、按包分层，已包含直接MAVLink/UDP、只读遥测/地图、边界草稿、JNI单地块规划与本地任务列表。以下任务版本、上传、执行、恢复和报告为目标架构，尚未实现；实际职责、限制和优化顺序见[当前架构分析](22-architecture-assessment.md)。
 
 ## 分层与依赖
 
@@ -56,4 +56,12 @@ Android 首期使用 Kotlin + Compose。跨平台需求确认后再决定是否�
 
 生成基线见protocol/manifest.json和protocol/README.md；依赖与协议替换验证状态见07。历史MAVSDK实现与证据见14/15/17，不作为当前直接UDP验证结论。
 
-构建身份通过BuildConfig.BUILD_IDENTITY和FgcBuild启动日志提供：通信实现、分支、基线提交、dirty标记及app主源码/资源/构建脚本指纹。该指纹用于识别调试APK，不是完整依赖供应链摘要，也不包含本地密钥配置。主UI工作区与通信worktree仍未合并，不能将一边测试视为集成通过。
+构建身份通过BuildConfig.BUILD_IDENTITY和FgcBuild启动日志提供：通信实现、分支、基线提交、dirty标记及app主源码/资源/构建脚本指纹。该指纹用于识别调试APK，不是完整依赖供应链摘要，也不包含本地密钥配置。UI和直接UDP已集成，既往独立工作区探针仅保留为历史证据；当前验证结论以07为准。
+
+### 地块边界编辑增量
+
+BoundaryDraft/BoundaryPoint为纯Kotlin草稿模型；BoundaryDraftStore通过FoundationStore原子保存完整记录；BoundaryEditor在IO线程串行读写，成功后发布StateFlow。BoundaryFlow负责面板与准星交互，地图Presenter维护草稿GeoJSON图层。当前仅单草稿，不代表已实现完整任务版本、规划或执行快照。
+
+单地块规划：BoundaryFlow/FieldPlanningPanel→BoundaryEditor→FieldPlanningService→NativeFieldPlanner JNI→planning_bridge→纯C++参考算法；参数/边界/本地结果写入同一boundary-v2原子记录，v1可读。结果按输入revision/指纹及算法版本隔离；编辑使旧结果失效，取消/迟到结果不可提交。地图复用原Presenter新增field-plan图层，不创建第二地图。仅本地估算，没有上传或执行事实；保守规模及异常验证见07/24。
+
+本地命名任务列表：BoundaryDraftStore通过FoundationStore枚举field-task-UUID记录；BoundaryEditor串行IO读取/改名/删除并发布tasks/selectedTask/taskListError只读Flow。TaskListSidebar仅消费状态并发出操作，地图Presenter复用原图层读取选中预览；预览与编辑草稿隔离，不代表上传或执行快照。

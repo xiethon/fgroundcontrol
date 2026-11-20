@@ -158,6 +158,9 @@ class GroundControlApp : Application() {
             } finally { temp?.delete() }
         }
     }
+    fun recordPlanningFailure(operation: String, error: Exception) {
+        record(LogKind.APP, "field-planning $operation: ${error.javaClass.simpleName}: ${error.message}")
+    }
     private fun record(kind: LogKind, message: String) {
         if (!events.offer(kind, message)) {
             mutableStatus.value = "log queue full: event dropped (${kind.name})"

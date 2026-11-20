@@ -62,46 +62,6 @@
       "role": "runtime"
     },
     {
-      "file": "app/src/main/res/drawable-nodpi/boundary_add_boundary.png",
-      "size": [
-        32,
-        32
-      ],
-      "sha256": "a298d4466d4f476f3460e0e8de7505bdd6389fe49901a09da40920eca15deb11",
-      "source": "reference/assets/icons/pages/mission/add_boundary.svg",
-      "role": "runtime"
-    },
-    {
-      "file": "app/src/main/res/drawable-nodpi/boundary_add_obstacle.png",
-      "size": [
-        32,
-        32
-      ],
-      "sha256": "add300d5383e449b46391753601c3e8088ad04eda461c97f34da9ef7771a58fa",
-      "source": "reference/assets/icons/pages/mission/add_obstacle.svg",
-      "role": "runtime"
-    },
-    {
-      "file": "app/src/main/res/drawable-nodpi/boundary_add_nospray.png",
-      "size": [
-        32,
-        32
-      ],
-      "sha256": "c9ae1287a23b26d602cb3297b6523ce9f12f93773830ee025ce3efd2b59c4983",
-      "source": "reference/assets/icons/pages/mission/add_nospray.svg",
-      "role": "runtime"
-    },
-    {
-      "file": "app/src/main/res/drawable-nodpi/boundary_add_obstacle_round.png",
-      "size": [
-        24,
-        24
-      ],
-      "sha256": "4a5d020aa499a8a7a4ce161bb418abc11c20f8200963d7a69a6f9e68ceb702a4",
-      "source": "reference/assets/icons/pages/mission/add_obstacle_round.svg",
-      "role": "runtime"
-    },
-    {
       "file": "app/src/main/res/drawable-nodpi/boundary_cancel.png",
       "size": [
         24,

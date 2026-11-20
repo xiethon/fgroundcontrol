@@ -26,7 +26,7 @@ import com.fairland.fgroundcontrol.FoundationViewModel
 import com.fairland.fgroundcontrol.R
 import com.fairland.fgroundcontrol.maps.MapHomeScreen
 
-/** 仅移植Home→作业方式→飞行页面导航，不绑定任务或飞行操作。 */
+/** 启动导航与本地边界草稿续编入口，不触发飞行操作。 */
 @Composable
 fun StartupFlow(model: FoundationViewModel, unsupported: () -> Unit) {
     var page by rememberSaveable { mutableStateOf("home") }
@@ -34,7 +34,21 @@ fun StartupFlow(model: FoundationViewModel, unsupported: () -> Unit) {
     val boundary by model.boundary.state.collectAsStateWithLifecycle()
     var asked by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(boundary.loaded) { if(boundary.loaded && boundary.draft==null) asked=true }
-    if(boundary.loaded && !asked && boundary.draft!=null) AlertDialog(onDismissRequest={asked=true},title={Text(stringResource(R.string.boundary_resume))},text={Text(stringResource(R.string.boundary_resume_hint))},confirmButton={TextButton(onClick={asked=true;lastMode="field";page="boundary-edit";model.followMap(false)}) {Text(stringResource(R.string.boundary_continue))}},dismissButton={TextButton(onClick={asked=true}) {Text(stringResource(R.string.boundary_later))}})
+    var discarding by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(discarding,boundary.busy,boundary.error,boundary.draft) {
+        if(discarding && !boundary.busy) {
+            discarding=false
+            if(!boundary.error && boundary.draft?.points.isNullOrEmpty()) asked=true
+        }
+    }
+    if(boundary.loaded && !asked && boundary.draft!=null) AlertDialog(
+        onDismissRequest={ if(!boundary.busy) asked=true },
+        title={Text(stringResource(R.string.boundary_resume))},
+        text={Text(stringResource(if(boundary.error) R.string.boundary_discard_error else R.string.boundary_resume_hint))},
+        confirmButton={TextButton(enabled=!boundary.busy && !boundary.error,onClick={asked=true;lastMode="field";page="boundary-edit";model.followMap(false)}) {Text(stringResource(R.string.boundary_continue))}},
+        dismissButton={TextButton(enabled=!boundary.busy,onClick={
+            if(boundary.error) model.boundary.retry() else discarding=model.boundary.discardDraft()
+        }) {Text(stringResource(if(boundary.error) R.string.task_list_retry else R.string.boundary_later))}})
     BackHandler(enabled = page != "home" && !page.startsWith("boundary")) { page = if (page == "flight") "methods" else "home" }
     when (page) {
         "flight", "boundary-list", "boundary-edit" -> if(lastMode=="field") {
@@ -42,7 +56,7 @@ fun StartupFlow(model: FoundationViewModel, unsupported: () -> Unit) {
             BoundaryFlow(model,page=="boundary-edit",
                 onEdit={page="boundary-edit";model.followMap(false)},
                 onExit={page=when(page) { "boundary-edit" -> "boundary-list"; "boundary-list" -> "flight"; else -> "methods" }},
-                unsupported=unsupported,listVisible=page=="boundary-list",onOpenList={page="boundary-list"})
+                unsupported=unsupported)
         } else {
             MapHomeScreen(model, Modifier.fillMaxSize(), onSettings = unsupported,
                 onTaskMode = { page = "methods" }, unsupported = unsupported, selectedMode = lastMode)

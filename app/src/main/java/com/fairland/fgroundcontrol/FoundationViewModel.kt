@@ -12,7 +12,7 @@ class FoundationViewModel(application: Application) : AndroidViewModel(applicati
     var mapCenteredSession: Int? = null
     val boundaryCenter = kotlinx.coroutines.flow.MutableStateFlow<com.fairland.fgroundcontrol.mission.BoundaryPoint?>(null)
     val boundary = com.fairland.fgroundcontrol.mission.BoundaryEditor(
-        { com.fairland.fgroundcontrol.mission.BoundaryDraftStore(com.fairland.fgroundcontrol.data.FoundationStore(application.filesDir.resolve("boundary"))) }, viewModelScope)
+        { com.fairland.fgroundcontrol.mission.BoundaryDraftStore(com.fairland.fgroundcontrol.data.FoundationStore(application.filesDir.resolve("boundary"))) }, viewModelScope, resolveAddress = {app.maps.taskAddress(it)}, onFailure = app::recordPlanningFailure)
     val status = app.status
     val connection = app.connection.state
     val preset = app.configuredPreset

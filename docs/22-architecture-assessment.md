@@ -1,46 +1,48 @@
 # 当前架构梳理与优化建议
 
-本轮仅静态检查源码与既有证据，不修改实现、不重跑构建或UI，不作为全量Review/迁移验收。
+核对日期：2026-11-20。对象：feat/m3-field-planner，基线b1974e0及当前未提交改动。本文描述实际结构；上传执行等目标设计见02，不代表已实现。UI与真实地址尚未全部验收，不具备Git收尾条件。
 
-## 当前实现与目标的区别
+## 当前结构
 
-当前仅一个app Gradle模块，按ui/connection/telemetry/maps/data分包；任务/规划/上传/执行/恢复/报告仍是后续目标，不能将02中的规划当作已实现架构。
+单 app Gradle 模块，按包隔离；JNI通过 externalNativeBuild 接入纯C++规划核心。不需要为了分层立即拆成多个模块。
 
-存在两套尚未集成的开发树：主工作区feat/ui-map-home承载Figma UI重构及MAVSDK链路；/private/tmp/fgc-mavlink-direct的feat/mavlink-direct-udp承载直接UDP/生成Java协议，不包含新UI。两者均有未提交改动，main仍是d95a2ec。安装任一分支APK会替换同applicationId的另一版本；这是已经出现过的调试混淆来源，当前最先需要治理。
+| 边界 | 实际职责与入口 |
+| --- | --- |
+| 组装与生命周期 | GroundControlApp持有连接、地图、日志和回放服务；ConnectionService维护连接前台生命周期；FoundationViewModel承接页面状态与BoundaryEditor |
+| MAVLink与UDP | DirectMavlinkConnection协调会话；UdpTransport、MavlinkDecoder/Frames、TelemetryMapper和ConnectionPolicy隔离网络、编解码、字段转换和策略；标准XML生成Java消息，不再依赖MAVSDK |
+| 只读遥测 | TelemetryMonitor生成健康/轨迹/日志与展示状态；连接独立于页面，UI不直接发送协议消息 |
+| 任务编辑 | BoundaryDraft等为纯模型；BoundaryEditor串行协调草稿变更、规划、命名保存、列表、选中预览与地址补全；预览不覆盖当前草稿 |
+| 规划 | FieldPlanningService负责局部坐标、输入校验、版本指纹与结果校验；NativeFieldPlanner经JNI调用native/field-planner；后台串行且丢弃过期结果 |
+| 持久化 | FoundationStore提供单记录原子文件；BoundaryDraftStore读写兼容v1/v2草稿及独立UUID任务记录；坏记录隔离且保留证据 |
+| 地图与地址 | MapRepository管理地图源/配置/导入并提供地址解析入口；TaskAddressResolver独立处理天地图请求、并发上限、超时、响应大小与成功缓存 |
+| UI | StartupFlow、BoundaryFlow、FieldPlanningPanel、TaskListSidebar组织页面；SidebarTabs共享标签；ReadOnlyPanel含地图生命周期及MapPresenter；颜色/字体/布局来自AppTokens |
 
-已落地的数据流：ConnectionService管理前台生命周期→GroundControlApp持有连接、配置、日志、回放和地图对象→连接发布VehicleTelemetry→TelemetryMonitor生成健康/轨迹/飞行日志及Readout→FoundationViewModel→Compose/MapLibre。整体有StateFlow、后台IO、会话代际、样式代际、原子存储和有界日志队列，应该保留。
+主数据流：UDP → 会话/字段映射 → 遥测/健康 → ViewModel → Compose/MapLibre。
 
-## 优先级与优化目标
+规划流：边界/参数变更 → 草稿持久化 → 后台JNI规划 → 校验revision/指纹/算法版本 → 当前结果/地图预览 → 命名保存。保存地址失败不阻止本地保存；列表展开只补查缺失地址。
 
-| 优先级 | 依据/问题 | 建议与完成标准 |
+## 本轮完成的整理
+
+- 删除无引用图片/字符串、失效SDK探针脚本和不再使用的控件分支；保留生成协议、固定原生依赖、许可证、来源素材和有价值的测试。
+- 模型与文件存储分文件，共享标签从编辑面板提取；采用简单职责分离，未增加依赖或抽象框架。
+- 修复保存完成判断、参数防抖保存时序和坏任务遮蔽列表；最新验证见07。历史双工作树/MAVSDK描述已失效，不再作为现状。
+
+## 剩余问题与建议顺序
+
+| 优先级 | 依据与影响 | 建议及边界 |
 | --- | --- | --- |
-| 高 | 两工作树UI/通信互不包含，02仍有“迁移尚未执行”等旧描述 | 先列清两边差异与验收状态，再按用户授权完成集成；构建显示版本/分支或生成清单，让安装产物可追踪。不要在未验收前擅自合并或夹带改动 |
-| 高 | DirectMavlinkConnection同时承担socket、心跳发现、目标锁定、帧分派和字段换算 | 拆成UdpTransport、MavlinkCodec、VehicleSession、TelemetryMapper；以接口和构造注入接入，UI/领域不依赖生成消息类型。更换链路不再改Application和大量探针 |
-| 高 | 新链路仍缺完整健康映射、消息频率事务、多包STATUSTEXT，XML未与固定PX4版本核对 | 优先补齐迁移契约和证据；健康/文本/频率拒绝超时、旧会话/重启、固定飞控逐字段对照通过后才宣称等价替换，不用假值消除缺失 |
-| 高 | 连接state和telemetry分别发布；session Int仅在connect/disconnect改变；直接UDP用固定时间常量和字符串错误 | 建立单一连接快照（会话、目标、阶段、错误、遥测），明确重连/飞控重启的代际边界，注入单调时钟和连接策略；覆盖超时前后、旧来源重入和快速切换，不把ACK当实际状态 |
-| 中 | GroundControlApp直接管理存储写入、日志、连接重试、地图和回放；FoundationViewModel透传Application | Application保留轻量组装入口；拆ConnectionCoordinator、配置/日志/回放服务并注入页面ViewModel。先构造注入，不为此引入大型DI框架 |
-| 中 | VehicleTelemetry以字符串topic、List<Double?>和text承载异构数据；GPS/模式/health多处字符串判断 | 按主题引入具名数据类型、枚举及字段质量；统一单位、无效哨兵、源消息和采样时间，边界仅做一次转换，减少索引/字符串耦合 |
-| 中 | ReadOnlyPanel.kt同时含诊断UI、MapView生命周期、MapPresenter与原生绘图；StartupFlow集中多页；TopBar内有假数据 | 按页面/地图呈现器/遥测展示模型拆分；假数据放独立预览数据源并由明确配置控制，保持用户要求的不显示标签，避免进入真实领域状态；token与原始素材继续共享 |
-| 中 | TelemetryMonitor每250ms结合健康、轨迹、GeoJSON和日志，直接使用Android时钟 | 分离纯健康规则、轨迹累计器与日志事件投影；仅轨迹变化生成GeoJSON，注入时钟便于确定性测试；测量后再优化5000点集合复制，不能无证据宣称已有性能瓶颈 |
-| 中 | 生成334个Java文件与业务同目录，生成脚本依赖开发机pymavlink，旧SDK探针/桥接残留 | 独立generated源码目录或协议模块，固定生成器/定义/许可证、CI校验重生成差异；清理不再使用的SDK探针和桥接，保留清楚的历史文档，不删除仍被MapLibre需要的原生运行库 |
-| 后续 | FoundationStore适合小配置，尚无任务版本/执行快照持久化模型 | 本阶段维持原子文件；进入任务阶段后再确认事务/迁移/版本模型，按需要引入数据库，不提前把所有配置改成数据库 |
+| 高：验收 | UI和真实地址流程未全部验证，设备探针本轮未完成 | 先完成07中的差异验收与设备回归，不能以构建或来源齐全代替验收 |
+| 中：编辑协调职责 | BoundaryEditor同时管理草稿、规划、任务CRUD和地址补全，后续增加已保存任务编辑会加重耦合 | 下一次相关需求时拆任务仓储/地址补全协调器，保留统一串行写入及结果代际；本轮不另建框架 |
+| 中：跨记录一致性 | 草稿与独立任务各自原子，二者不是事务；进程在两次写入之间退出可只留下草稿 | 当前先写草稿再存任务，仅成功后发布完成；正式任务版本库需求确认时再引入稳定任务身份、事务和迁移，不能称当前文件存储已实现版本库 |
+| 中：规划生命周期 | 自动调度入口仍与编辑UI副作用有关；取消协程不能硬中断C++，输入预算不等于硬超时 | 后续将调度归到编辑应用服务；保留指纹和串行保护。若实测耗时超预算再设计原生协作取消，不提前改算法语义 |
+| 中：地图代码边界 | ReadOnlyPanel同时包含诊断、MapView生命周期、MapPresenter与绘图；MapRepository仍承接地址入口 | 下次改地图时按呈现器/平台宿主拆分；密钥供应与地址服务分离。保持地图实例及样式代次，避免重构造成相机或图层回归 |
+| 中：组装和遥测模型 | Application仍承担多项服务协调；部分遥测使用topic/数值列表和字符串约定 | 随实际需求提取协调器与具名类型，先固定单位、缺失与过期语义；不在清理中改变飞行状态映射 |
+| 后续：任务执行模型 | 当前无上传快照、执行记录和恢复匹配，选中任务的编辑/加载仍按约定提示未支持 | 下一阶段先确认语义再实现；不把列表、路线预览或高级预览选项视为飞行能力 |
 
-## 建议依赖方向
+## 依赖和保留原则
 
-UI → 页面ViewModel → 应用服务 → 领域状态/规则；协议/UDP、文件/日志、地图平台实现通过接口供应用服务调用。生成Java消息仅停留在协议适配边界。
+UI → 页面状态/应用服务 → 模型与规则；UDP/协议、JNI、文件、地址HTTP和MapLibre停留在适配边界。当前包级结构可以继续支撑本地规划，不建议现在引入大型DI、网络服务或全面数据库迁移。
 
-暂不拆成大量Gradle模块。先完成包内职责与接口分离，生成协议可作为首个独立边界；只有依赖隔离或构建收益明确后再做多模块化。
+assets/design是设计来源与导出记录，不是全量运行资源；app/src/main/res才是Android运行资源。native中的Boost归档、Clipper源码和许可证用于离线可重复构建，不能按“体积大”删除。历史文档保留已确认决策/验证依据，当前状态集中在06/07。
 
-## 验证和实施顺序
-
-1. 固化安装产物身份、分支差异及当前需求版本，消除“改A分支、运行B版本”的问题。
-2. 补齐直接UDP迁移合同与协议/固定SITL故障回归，保持原UI工作树完整。
-3. 将会话/编解码/遥测映射拆为可独立测试的实现，单一快照与纯时钟测试同步开展。
-4. 精简Application与ViewModel职责，拆地图/UI文件，隔离预览数据；在授权集成后验证统一版本。
-5. 下一阶段再建设任务/规划/上传/执行持久化，不在架构整理中提前实现飞行行为。
-
-旧UI基线27项测试与直接UDP36项测试、当前实际SITL心跳/位置探针分别记录在07及迁移worktree进度；不是“新UI+新通信”集成版本通过证据。完整健康、频率事务、故障/目标硬件验证仍未完成。接收签名但不验签是用户已确认的当前策略，本轮不自行更改。
-
-## 第一版落地状态
-
-用户授权后，独立通信分支已实现UdpTransport、TelemetryMapper、ConnectionPolicy/时钟注入、ConnectionSnapshot和构建身份日志/源码指纹；40项单测、构建/Lint及无UI回环/当前SITL基础连接通过。旧Flow仍保留兼容，上层消费迁移、Application精简、UI拆分及完整健康/频率契约尚未完成；不以本次第一版替代全部优化验收。原UI工作区未合入通信改动。
+本轮仅完成清理和小范围职责分离；以上剩余建议不是已经实施或通过验收的功能。接收签名但不验签仍按用户既有策略，本轮未更改。
