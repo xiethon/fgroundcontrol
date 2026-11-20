@@ -142,4 +142,3 @@ internal fun TaskListSidebar(model: FoundationViewModel,scale: Float,unsupported
         confirmButton={TextButton(onClick={model.boundary.deleteTask(task);deleting=null}) {Text(stringResource(R.string.task_list_delete),color=AppColors.error)}},
         dismissButton={TextButton(onClick={deleting=null}) {Text(stringResource(R.string.boundary_cancel))}}) }
 }
-
