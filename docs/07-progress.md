@@ -3,8 +3,8 @@
 ## 当前阶段与基线
 
 - M1、M2、UI01、UI02已验收收尾；M3边界增量源码5a36687及记录b1974e0已合入本地main。
-- 当前分支 `feat/m3-field-planner`，HEAD `b1974e0`；本阶段改动未提交、合并或推送，保留已有改动。
-- 当前范围：无障碍单地块 JNI 本地规划闭环及任务管理；完整 M3 未完成。
+- 本阶段源码 `cfc7c8a2`、审查整理 `1872a0e8` 已快进合入本地main并推送origin/main；源码工作区干净，开发分支已清理。
+- 当前增量：无障碍单地块 JNI 本地规划闭环及任务管理，已验收收尾；完整 M3 未完成。
 
 ## 已实现
 
@@ -94,3 +94,10 @@ assembleDebug、lintDebug、diff检查通过，日志`/private/tmp/fgc-task-unse
 最终assembleDebug、73项单测（0失败/错误）、lintDebug通过，测试APK构建通过；日志`/private/tmp/fgc-final-review.log`。API35/arm64模拟器无Activity的JNI、地址本地夹具及UDP探针均PASS/-1，日志`/private/tmp/fgc-final-jni-probe.log`、`fgc-final-address-probe.log`、`fgc-final-udp-probe.log`；探针未发真实地址或飞行指令。主机ASan/CTest 1/1通过`/private/tmp/fgc-final-native.log`，64位ELF/ZIP16KiB对齐通过。33项原生来源/补丁、32项设计资源文件哈希检查通过，待提交147项文件未发现本地配置、密钥或产物。实际SITL/台架/实飞未在本轮执行，不替代历史证据或用户验收。
 
 具备当前“无障碍单地块本地规划”增量源码收尾条件；完整M3及障碍/上传/执行/恢复仍未完成。详细审查见[阶段Review](25-review-m3-field-planner.md)。
+
+## Git收尾结果（2026-11-20）
+
+- 源码提交`cfc7c8a2`（单地块JNI规划、本地任务管理、地图预览与清理）；审查整理提交`1872a0e8`（项目空行及来源格式边界）。已快进合入main，推送origin/main成功；此前本地边界阶段5a36687/b1974e0也随主线正常推送，未强推、打标签或发布。
+- main集成后assembleDebug、73项单测、lintDebug通过，日志`/private/tmp/fgc-main-merge-check.log`；工作区无未保留源码改动。
+- `feat/m3-field-planner`和`feat/m3-cleanup`均已合入、无独有提交及关联worktree，已安全删除本地分支；同名远程分支不存在，跳过远程删除，已清理跟踪引用。main保留。
+- 本条收尾文档通过临时文档分支提交并随main同步，临时分支使命结束后清理。用户全部验收通过；无当前增量阻塞项，保留25中原生取消、其他ABI运行及后续完整M3能力限制。等待用户发起下一阶段。
